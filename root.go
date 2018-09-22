@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-type Hue struct {
+type Connection struct {
 	discoveryResponse []hueDiscoveryResponse
 	internalIPAddress string
 	userID            string
