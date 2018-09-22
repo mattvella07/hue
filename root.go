@@ -243,6 +243,17 @@ func (h *Connection) TurnOnLight(light int) error {
 	return nil
 }
 
+func (h *Connection) TurnOnLightWithColor(light, bri, hue, sat int) error {
+	state := fmt.Sprintf("{\"on\": true, \"bri\": %d, \"hue\": %d, \"sat\": %d}", bri, hue, sat)
+
+	err := h.changeLightState(light, state)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (h *Connection) TurnOffLight(light int) error {
 	state := "{\"on\": false}"
 
