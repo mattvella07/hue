@@ -76,7 +76,7 @@ type hueLight struct {
 
 const hueDiscoveryURL = "https://discovery.meethue.com/"
 
-func (h *Hue) initializeHue() error {
+func (h *Connection) initializeHue() error {
 	var err error
 
 	if h.internalIPAddress == "" {
@@ -100,7 +100,7 @@ func (h *Hue) initializeHue() error {
 	return nil
 }
 
-func (h *Hue) getBridgeIPAddress() error {
+func (h *Connection) getBridgeIPAddress() error {
 	resp, err := http.Get(hueDiscoveryURL)
 	if err != nil {
 		return err
@@ -124,7 +124,7 @@ func (h *Hue) getBridgeIPAddress() error {
 	return nil
 }
 
-func (h *Hue) getUserID() error {
+func (h *Connection) getUserID() error {
 	val, ok := os.LookupEnv("hueUserID")
 	if ok {
 		h.userID = val
@@ -136,11 +136,11 @@ func (h *Hue) getUserID() error {
 	}
 }
 
-func (h *Hue) getBaseURL() {
+func (h *Connection) getBaseURL() {
 	h.baseURL = fmt.Sprintf("http://%s/api/%s/lights/", h.internalIPAddress, h.userID)
 }
 
-func (h *Hue) GetLights() ([]hueLight, error) {
+func (h *Connection) GetLights() ([]hueLight, error) {
 	err := h.initializeHue()
 	if err != nil {
 		return nil, err
@@ -211,7 +211,7 @@ func (h *Hue) GetLights() ([]hueLight, error) {
 	return h.Lights, nil
 }
 
-func (h *Hue) changeLightState(light int, state string) error {
+func (h *Connection) changeLightState(light int, state string) error {
 	err := h.initializeHue()
 	if err != nil {
 		return err
@@ -232,7 +232,7 @@ func (h *Hue) changeLightState(light int, state string) error {
 	return nil
 }
 
-func (h *Hue) TurnOnLight(light int) error {
+func (h *Connection) TurnOnLight(light int) error {
 	state := "{\"on\": true}"
 
 	err := h.changeLightState(light, state)
@@ -243,7 +243,7 @@ func (h *Hue) TurnOnLight(light int) error {
 	return nil
 }
 
-func (h *Hue) TurnOffLight(light int) error {
+func (h *Connection) TurnOffLight(light int) error {
 	state := "{\"on\": false}"
 
 	err := h.changeLightState(light, state)
