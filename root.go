@@ -13,7 +13,7 @@ import (
 type Connection struct {
 	discoveryResponse []hueDiscoveryResponse
 	internalIPAddress string
-	userID            string
+	UserID            string
 	baseURL           string
 	Lights            []hueLight
 }
@@ -86,7 +86,7 @@ func (h *Connection) initializeHue() error {
 		}
 	}
 
-	if h.userID == "" {
+	if h.UserID == "" {
 		err = h.getUserID()
 		if err != nil {
 			return fmt.Errorf("GetUserID Error: %s", err)
@@ -127,7 +127,7 @@ func (h *Connection) getBridgeIPAddress() error {
 func (h *Connection) getUserID() error {
 	val, ok := os.LookupEnv("hueUserID")
 	if ok {
-		h.userID = val
+		h.UserID = val
 		return nil
 	} else {
 		return errors.New("Unable to get Hue user ID")
@@ -137,7 +137,7 @@ func (h *Connection) getUserID() error {
 }
 
 func (h *Connection) getBaseURL() {
-	h.baseURL = fmt.Sprintf("http://%s/api/%s/lights/", h.internalIPAddress, h.userID)
+	h.baseURL = fmt.Sprintf("http://%s/api/%s/lights/", h.internalIPAddress, h.UserID)
 }
 
 func (h *Connection) GetLights() ([]hueLight, error) {
