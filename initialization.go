@@ -136,5 +136,5 @@ func (h *Connection) getUserID() error {
 }
 
 func (h *Connection) getBaseURL() {
-	h.baseURL = fmt.Sprintf("http://%s/api/%s/lights/", h.internalIPAddress, h.UserID)
+	h.baseURL = fmt.Sprintf("http://%s/api/%s", h.internalIPAddress, h.UserID)
 }

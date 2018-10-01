@@ -16,7 +16,7 @@ func main() {
 	}
 
 	//Get all lights
-	lights, err := h.GetLights()
+	lights, err := h.GetAllLights()
 	if err != nil {
 		log.Fatalln(err)
 	}

@@ -8,13 +8,13 @@ import (
 	"strings"
 )
 
-func (h *Connection) GetLights() ([]hueLight, error) {
+func (h *Connection) GetAllLights() ([]hueLight, error) {
 	err := h.initializeHue()
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := http.Get(h.baseURL)
+	resp, err := http.Get(fmt.Sprintf("%s/lights", h.baseURL))
 	if err != nil {
 		return nil, err
 	}
@@ -26,7 +26,7 @@ func (h *Connection) GetLights() ([]hueLight, error) {
 
 	fullResponse := string(body)
 
-	var light hueLight
+	light := hueLight{}
 	count := 1
 	fullResponse = strings.Replace(fullResponse, "{", "", 1)
 	for count != -1 {
@@ -79,6 +79,52 @@ func (h *Connection) GetLights() ([]hueLight, error) {
 	return h.Lights, nil
 }
 
+func (h *Connection) GetLight(light int) (hueLight, error) {
+	err := h.initializeHue()
+	if err != nil {
+		return hueLight{}, err
+	}
+
+	resp, err := http.Get(fmt.Sprintf("%s/lights/%d", h.baseURL, light))
+	if err != nil {
+		return hueLight{}, err
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return hueLight{}, err
+	}
+
+	lightRes := hueLight{}
+
+	err = json.Unmarshal(body, &lightRes)
+	if err != nil {
+		return hueLight{}, err
+	}
+
+	return lightRes, nil
+}
+
+func (h *Connection) FindNewLights() error {
+	err := h.initializeHue()
+	if err != nil {
+		return err
+	}
+
+	client := &http.Client{}
+	req, err := http.NewRequest("POST", fmt.Sprintf("%s/lights", h.baseURL), nil)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+	return nil
+}
+
 func (h *Connection) changeLightState(light int, state string) error {
 	err := h.initializeHue()
 	if err != nil {
@@ -87,7 +133,7 @@ func (h *Connection) changeLightState(light int, state string) error {
 
 	client := &http.Client{}
 	body := strings.NewReader(state)
-	req, err := http.NewRequest("PUT", fmt.Sprintf("%s%d/state", h.baseURL, light), body)
+	req, err := http.NewRequest("PUT", fmt.Sprintf("%s/lights/%d/state", h.baseURL, light), body)
 	if err != nil {
 		return err
 	}
