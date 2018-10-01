@@ -25,7 +25,8 @@ func main() {
 	fmt.Println(lights)
 
 	//Turn on light 1
-	err = h.TurnOnLight(1)
+	//err = h.TurnOnLight(2)
+	err = h.TurnOnLightWithColor(2, 0.2, 0.9, 100, 200, 300)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -34,7 +35,7 @@ func main() {
 	time.Sleep(time.Second * 3)
 
 	//Turn off light 1
-	err = h.TurnOffLight(1)
+	err = h.TurnOffLight(2)
 	if err != nil {
 		log.Fatalln(err)
 	}
