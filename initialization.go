@@ -22,55 +22,69 @@ type hueDiscoveryResponse struct {
 	InternalIPAddress string `json:"internalipaddress"`
 }
 
+type hueLightState struct {
+	On        bool      `json:"on"`
+	Bri       int       `json:"bri"`
+	Hue       int       `json:"hue"`
+	Sat       int       `json:"sat"`
+	Effect    string    `json:"effect"`
+	XY        []float32 `json:"xy"`
+	CT        int       `json:"ct"`
+	Alert     string    `json:"alert"`
+	ColorMode string    `json:"colormode"`
+	Mode      string    `json:"mode"`
+	Reachable bool      `json:"reachable"`
+}
+
+type hueLightSWUpdate struct {
+	State       string `json:"state"`
+	LastInstall string `json:"lastinstall"`
+}
+
+type hueLightCapabilitiesCT struct {
+	Min int `json:"min"`
+	Max int `json:"max"`
+}
+
+type hueLightCapabilitiesControl struct {
+	MindimLevel    int                    `json:"mindimlevel"`
+	MaxLumen       int                    `json:"maxlumen"`
+	ColorGamutType string                 `json:"colorgamuttype"`
+	ColorGamut     [][]float32            `json:"colorgamut"`
+	CT             hueLightCapabilitiesCT `json:"ct"`
+}
+
+type hueLightCapabilitiesStreaming struct {
+	Renderer bool `json:"renderer"`
+	Proxy    bool `json:"proxy"`
+}
+
+type hueLightCapabilities struct {
+	Certified bool                          `json:"certified"`
+	Control   hueLightCapabilitiesControl   `json:"control"`
+	Streaming hueLightCapabilitiesStreaming `json:"streaming"`
+}
+
+type hueLightConfig struct {
+	ArcheType string `json:"archetype"`
+	Function  string `json:"function"`
+	Direction string `json:"direction"`
+}
+
 type hueLight struct {
-	State struct {
-		On        bool      `json:"on"`
-		Bri       int       `json:"bri"`
-		Hue       int       `json:"hue"`
-		Sat       int       `json:"sat"`
-		Effect    string    `json:"effect"`
-		XY        []float32 `json:"xy"`
-		CT        int       `json:"ct"`
-		Alert     string    `json:"alert"`
-		ColorMode string    `json:"colormode"`
-		Mode      string    `json:"mode"`
-		Reachable bool      `json:"reachable"`
-	} `json:"state"`
-	SWUpdate struct {
-		State       string `json:"state"`
-		LastInstall string `json:"lastinstall"`
-	} `json:"swupdate"`
-	Type             string `json:"type"`
-	Name             string `json:"name"`
-	ModelID          string `json:"modelid"`
-	ManufacturerName string `json:"manufacturername"`
-	ProductName      string `json:"productname"`
-	Capabilities     struct {
-		Certified bool `json:"certified"`
-		Control   struct {
-			MindimLevel    int         `json:"mindimlevel"`
-			MaxLumen       int         `json:"maxlumen"`
-			ColorGamutType string      `json:"colorgamuttype"`
-			ColorGamut     [][]float32 `json:"colorgamut"`
-			CT             struct {
-				Min int `json:"min"`
-				Max int `json:"max"`
-			} `json:"ct"`
-		} `json:"control"`
-		Streaming struct {
-			Renderer bool `json:"renderer"`
-			Proxy    bool `json:"proxy"`
-		} `json:"streaming"`
-	} `json:"capabilities"`
-	Config struct {
-		ArcheType string `json:"archetype"`
-		Function  string `json:"function"`
-		Direction string `json:"direction"`
-	} `json:"config"`
-	UniqueID   string `json:"uniqueid"`
-	SWVersion  string `json:"swversion"`
-	SWConfigID string `json:"swconfigid"`
-	ProductID  string `json:"productid"`
+	State            hueLightState        `json:"state"`
+	SWUpdate         hueLightSWUpdate     `json:"swupdate"`
+	Type             string               `json:"type"`
+	Name             string               `json:"name"`
+	ModelID          string               `json:"modelid"`
+	ManufacturerName string               `json:"manufacturername"`
+	ProductName      string               `json:"productname"`
+	Capabilities     hueLightCapabilities `json:"capabilities"`
+	Config           hueLightConfig       `json:"config"`
+	UniqueID         string               `json:"uniqueid"`
+	SWVersion        string               `json:"swversion"`
+	SWConfigID       string               `json:"swconfigid"`
+	ProductID        string               `json:"productid"`
 }
 
 const hueDiscoveryURL = "https://discovery.meethue.com/"
