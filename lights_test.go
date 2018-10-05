@@ -94,5 +94,15 @@ func TestGetAllLights(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	fmt.Println(lights)
+  {
+    if len(lights) != 1 {
+      t.Fatalf("Expected 1 light, got %d", len(lights))
+    }
+  }
+
+	{
+		if lights[0].Name != "Hue color lamp 1" {
+			t.Fatalf("Expected %s to equal Hue color lamp 1", lights[0].Name) 
+		} 
+	}
 }
