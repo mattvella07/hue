@@ -9,12 +9,14 @@ import (
 	"os"
 )
 
+// Connection contains important connection info and the array of all
+// Phillips Hue lights attached to the current bridge
 type Connection struct {
 	discoveryResponse []hueDiscoveryResponse
 	internalIPAddress string
 	UserID            string
 	baseURL           string
-	Lights            []hueLight
+	Lights            []Light
 }
 
 type hueDiscoveryResponse struct {
@@ -71,7 +73,9 @@ type hueLightConfig struct {
 	Direction string `json:"direction"`
 }
 
-type hueLight struct {
+// Light contains all data returned from the Phillips Hue API
+// for an individual Phillips Hue light
+type Light struct {
 	State            hueLightState        `json:"state"`
 	SWUpdate         hueLightSWUpdate     `json:"swupdate"`
 	Type             string               `json:"type"`

@@ -8,7 +8,8 @@ import (
 	"strings"
 )
 
-func (h *Connection) GetAllLights() ([]hueLight, error) {
+// GetAllLights gets all Phillips Hue lights connected to current bridge
+func (h *Connection) GetAllLights() ([]Light, error) {
 	err := h.initializeHue()
 	if err != nil {
 		return nil, err
@@ -26,7 +27,7 @@ func (h *Connection) GetAllLights() ([]hueLight, error) {
 
 	fullResponse := string(body)
 
-	light := hueLight{}
+	light := Light{}
 	count := 1
 	fullResponse = strings.Replace(fullResponse, "{", "", 1)
 	for count != -1 {
@@ -79,32 +80,40 @@ func (h *Connection) GetAllLights() ([]hueLight, error) {
 	return h.Lights, nil
 }
 
-func (h *Connection) GetLight(light int) (hueLight, error) {
+// GetLight gets the specified Phillips Hue light
+func (h *Connection) GetLight(light int) (Light, error) {
 	err := h.initializeHue()
 	if err != nil {
-		return hueLight{}, err
+		return Light{}, err
 	}
 
 	resp, err := http.Get(fmt.Sprintf("%s/lights/%d", h.baseURL, light))
 	if err != nil {
-		return hueLight{}, err
+		return Light{}, err
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return hueLight{}, err
+		return Light{}, err
 	}
 
-	lightRes := hueLight{}
+	//Light not found
+	if len(body) == 0 {
+		return Light{}, fmt.Errorf("Light not found")
+	}
+
+	lightRes := Light{}
 
 	err = json.Unmarshal(body, &lightRes)
 	if err != nil {
-		return hueLight{}, err
+		return Light{}, err
 	}
 
 	return lightRes, nil
 }
 
+// FindNewLights finds new Phillips Hue lights that have been added since
+// the last time performing this call
 func (h *Connection) FindNewLights() error {
 	err := h.initializeHue()
 	if err != nil {
@@ -146,7 +155,10 @@ func (h *Connection) changeLightState(light int, state string) error {
 	return nil
 }
 
+// TurnOnLight turns on the specified Phillips Hue light without setting the color
 func (h *Connection) TurnOnLight(light int) error {
+	//Error checking - check light to make sure it exists in the Lights array
+
 	state := "{\"on\": true}"
 
 	err := h.changeLightState(light, state)
@@ -157,7 +169,12 @@ func (h *Connection) TurnOnLight(light int) error {
 	return nil
 }
 
+// TurnOnLightWithColor turns on the specified Phillips Hue light to the color
+// specified by the x and y parameters. Also sets the Bri, Hue, and Sat properties
 func (h *Connection) TurnOnLightWithColor(light int, x, y float32, bri, hue, sat int) error {
+	//Error checking - check light to make sure it exists in the Lights array
+	//Error checking - check x, y, bri, hue, sat that they are valid values
+
 	state := fmt.Sprintf("{\"on\": true, \"xy\": [%f, %f], \"bri\": %d, \"hue\": %d, \"sat\": %d}", x, y, bri, hue, sat)
 
 	err := h.changeLightState(light, state)
@@ -168,7 +185,10 @@ func (h *Connection) TurnOnLightWithColor(light int, x, y float32, bri, hue, sat
 	return nil
 }
 
+// TurnOffLight turns off the specified Phillips Hue light
 func (h *Connection) TurnOffLight(light int) error {
+	//Error checking - check light to make sure it exists in the Lights array
+
 	state := "{\"on\": false}"
 
 	err := h.changeLightState(light, state)
