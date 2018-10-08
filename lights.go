@@ -173,7 +173,9 @@ func (h *Connection) TurnOnLight(light int) error {
 // specified by the x and y parameters. Also sets the Bri, Hue, and Sat properties
 func (h *Connection) TurnOnLightWithColor(light int, x, y float32, bri, hue, sat int) error {
 	//Error checking - check light to make sure it exists in the Lights array
-	//Error checking - check x, y, bri, hue, sat that they are valid values
+	//bri - Between 1 and 254
+	//hue - Between 0 and 65535
+	//sat - Between 0 and 254
 
 	state := fmt.Sprintf("{\"on\": true, \"xy\": [%f, %f], \"bri\": %d, \"hue\": %d, \"sat\": %d}", x, y, bri, hue, sat)
 
