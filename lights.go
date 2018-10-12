@@ -157,8 +157,12 @@ func (h *Connection) changeLightState(light int, state string) error {
 
 // TurnOnLight turns on the specified Phillips Hue light without setting the color
 func (h *Connection) TurnOnLight(light int) error {
-	//Error checking - check light to make sure it exists in the Lights array
+	// Error checking
+	if !h.doesLightExist(light) {
+		return fmt.Errorf("Light not found")
+	}
 
+	// Set state
 	state := "{\"on\": true}"
 
 	err := h.changeLightState(light, state)
@@ -172,11 +176,32 @@ func (h *Connection) TurnOnLight(light int) error {
 // TurnOnLightWithColor turns on the specified Phillips Hue light to the color
 // specified by the x and y parameters. Also sets the Bri, Hue, and Sat properties
 func (h *Connection) TurnOnLightWithColor(light int, x, y float32, bri, hue, sat int) error {
-	//Error checking - check light to make sure it exists in the Lights array
-	//bri - Between 1 and 254
-	//hue - Between 0 and 65535
-	//sat - Between 0 and 254
+	// Error checking
+	if !h.doesLightExist(light) {
+		return fmt.Errorf("Light not found")
+	}
 
+	if x < 0 || x > 1 {
+		return fmt.Errorf("Invalid color value: x must be between 0 and 1")
+	}
+
+	if y < 0 || y > 1 {
+		return fmt.Errorf("Invalid color value: y must be between 0 and 1")
+	}
+
+	if bri < 1 || bri > 254 {
+		return fmt.Errorf("Invalid brightness value: bri must be between 1 and 254")
+	}
+
+	if hue < 0 || hue > 65535 {
+		return fmt.Errorf("Invalid hue value: hue must be between 0 and 65,535")
+	}
+
+	if sat < 0 || sat > 254 {
+		return fmt.Errorf("Invalid saturation value: sat must be between 0 and 254")
+	}
+
+	// Set state
 	state := fmt.Sprintf("{\"on\": true, \"xy\": [%f, %f], \"bri\": %d, \"hue\": %d, \"sat\": %d}", x, y, bri, hue, sat)
 
 	err := h.changeLightState(light, state)
@@ -189,8 +214,12 @@ func (h *Connection) TurnOnLightWithColor(light int, x, y float32, bri, hue, sat
 
 // TurnOffLight turns off the specified Phillips Hue light
 func (h *Connection) TurnOffLight(light int) error {
-	//Error checking - check light to make sure it exists in the Lights array
+	// Error checking
+	if !h.doesLightExist(light) {
+		return fmt.Errorf("Light not found")
+	}
 
+	// Set state
 	state := "{\"on\": false}"
 
 	err := h.changeLightState(light, state)
@@ -199,4 +228,14 @@ func (h *Connection) TurnOffLight(light int) error {
 	}
 
 	return nil
+}
+
+func (h *Connection) doesLightExist(light int) bool {
+	// If GetLight returns an error, then the light doesn't exist
+	_, err := h.GetLight(light)
+	if err != nil {
+		return false
+	}
+
+	return true
 }
