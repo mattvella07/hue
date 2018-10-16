@@ -74,6 +74,7 @@ type Light struct {
 	SWVersion        string            `json:"swversion"`
 	SWConfigID       string            `json:"swconfigid"`
 	ProductID        string            `json:"productid"`
+	ID               int               `json:"id"`
 }
 
 // NewLight contains all data for a new Phillips Hue light
@@ -110,18 +111,29 @@ func (h *Connection) GetAllLights() ([]Light, error) {
 
 	light := Light{}
 	allLights := []Light{}
-	count := 1
 	fullResponse = strings.Replace(fullResponse, "{", "", 1)
+
+	// Get starting light id
+	count := -1
+	if len(fullResponse) > 0 {
+		countStr := fullResponse[0:strings.Index(fullResponse, ":")]
+		countStr = strings.Replace(countStr, "\"", "", -1)
+		count, err = strconv.Atoi(countStr)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	for count != -1 {
 		tmpArray := strings.Split(fullResponse, fmt.Sprintf("\"%d\":", count))
 
 		if len(tmpArray) <= 1 {
 			if len(tmpArray) > 0 {
 				if tmpArray[0] != "" {
-					//Remove leading or trailing commas
+					// Remove leading or trailing commas
 					tmpArray[0] = strings.Trim(tmpArray[0], ",")
 
-					//If sting ends in two curly braces remove one
+					// If sting ends in two curly braces remove one
 					if strings.LastIndex(tmpArray[0], "}}") == len(tmpArray[0])-2 {
 						tmpArray[0] = tmpArray[0][0 : len(tmpArray[0])-1]
 					}
@@ -131,16 +143,18 @@ func (h *Connection) GetAllLights() ([]Light, error) {
 						return nil, err
 					}
 
+					light.ID = count
+
 					allLights = append(allLights, light)
 				}
 			}
 			count = -1
 		} else {
 			if tmpArray[0] != "" {
-				//Remove leading or trailing commas
+				// Remove leading or trailing commas
 				tmpArray[0] = strings.Trim(tmpArray[0], ",")
 
-				//If sting ends in two curly braces remove one
+				// If sting ends in two curly braces remove one
 				if strings.LastIndex(tmpArray[0], "}}") == len(tmpArray[0])-2 {
 					tmpArray[0] = tmpArray[0][0 : len(tmpArray[0])-1]
 				}
@@ -150,12 +164,14 @@ func (h *Connection) GetAllLights() ([]Light, error) {
 					return nil, err
 				}
 
+				light.ID = count
+				count++
+
 				allLights = append(allLights, light)
 			}
 
 			fullResponse = strings.Replace(fullResponse, fmt.Sprintf("\"%d\":", count), "", 1)
 			fullResponse = strings.Replace(fullResponse, tmpArray[0], "", 1)
-			count++
 		}
 	}
 
@@ -179,7 +195,7 @@ func (h *Connection) GetLight(light int) (Light, error) {
 		return Light{}, err
 	}
 
-	//Light not found
+	// Light not found
 	if len(body) == 0 {
 		return Light{}, fmt.Errorf("Light not found")
 	}
