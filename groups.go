@@ -12,6 +12,8 @@ type groupAction struct {
 	ColorMode string    `json:"colormode"`
 }
 
+// Group contains all data returned from the Phillips Hue API
+// for an individual Phillips Hue light group
 type Group struct {
 	Name   string      `json:"name"`
 	Lights []string    `json:"lights"`
@@ -19,6 +21,9 @@ type Group struct {
 	Action groupAction `json:"action"`
 }
 
-func (h *Connection) GetAllGroups() {
+// GetAllGroups gets all Phillips Hue light groups connected to current bridge
+func (h *Connection) GetAllGroups() ([]Group, error) {
 	// GET - /api/<username>/groups
+
+	return nil, nil
 }

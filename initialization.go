@@ -9,8 +9,7 @@ import (
 	"os"
 )
 
-// Connection contains important connection info and the array of all
-// Phillips Hue lights attached to the current bridge
+// Connection contains important connection info
 type Connection struct {
 	discoveryResponse []hueDiscoveryResponse
 	internalIPAddress string
