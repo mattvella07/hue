@@ -29,7 +29,7 @@ func createTestConnection(scenario int) (Connection, *httptest.Server) {
 				// One light
 				data := hueLightTestData{
 					One: Light{
-						State: hueLightState{
+						State: lightState{
 							On:        false,
 							Bri:       100,
 							Hue:       200,
@@ -42,7 +42,7 @@ func createTestConnection(scenario int) (Connection, *httptest.Server) {
 							Mode:      "",
 							Reachable: true,
 						},
-						SWUpdate: hueLightSWUpdate{
+						SWUpdate: lightSWUpdate{
 							State:       "noupdates",
 							LastInstall: "2018-06-04T6:14:11",
 						},
@@ -51,24 +51,24 @@ func createTestConnection(scenario int) (Connection, *httptest.Server) {
 						ModelID:          "LCT016",
 						ManufacturerName: "Phillips",
 						ProductName:      "Hue color lamp",
-						Capabilities: hueLightCapabilities{
+						Capabilities: lightCapabilities{
 							Certified: true,
-							Control: hueLightCapabilitiesControl{
+							Control: lightCapabilitiesControl{
 								MindimLevel:    1000,
 								MaxLumen:       800,
 								ColorGamutType: "C",
 								ColorGamut:     [][]float32{[]float32{0.2, 0.3}, []float32{0.4, 0.5}},
-								CT: hueLightCapabilitiesCT{
+								CT: lightCapabilitiesCT{
 									Min: 153,
 									Max: 500,
 								},
 							},
-							Streaming: hueLightCapabilitiesStreaming{
+							Streaming: lightCapabilitiesStreaming{
 								Renderer: true,
 								Proxy:    true,
 							},
 						},
-						Config: hueLightConfig{
+						Config: lightConfig{
 							ArcheType: "sultanbulb",
 							Function:  "mixed",
 							Direction: "omnidirectional",
@@ -95,7 +95,7 @@ func createTestConnection(scenario int) (Connection, *httptest.Server) {
 				if scenario == 1 {
 					// One light
 					data := Light{
-						State: hueLightState{
+						State: lightState{
 							On:        false,
 							Bri:       100,
 							Hue:       200,
@@ -108,7 +108,7 @@ func createTestConnection(scenario int) (Connection, *httptest.Server) {
 							Mode:      "",
 							Reachable: true,
 						},
-						SWUpdate: hueLightSWUpdate{
+						SWUpdate: lightSWUpdate{
 							State:       "noupdates",
 							LastInstall: "2018-06-04T6:14:11",
 						},
@@ -117,24 +117,24 @@ func createTestConnection(scenario int) (Connection, *httptest.Server) {
 						ModelID:          "LCT016",
 						ManufacturerName: "Phillips",
 						ProductName:      "Hue color lamp",
-						Capabilities: hueLightCapabilities{
+						Capabilities: lightCapabilities{
 							Certified: true,
-							Control: hueLightCapabilitiesControl{
+							Control: lightCapabilitiesControl{
 								MindimLevel:    1000,
 								MaxLumen:       800,
 								ColorGamutType: "C",
 								ColorGamut:     [][]float32{[]float32{0.2, 0.3}, []float32{0.4, 0.5}},
-								CT: hueLightCapabilitiesCT{
+								CT: lightCapabilitiesCT{
 									Min: 153,
 									Max: 500,
 								},
 							},
-							Streaming: hueLightCapabilitiesStreaming{
+							Streaming: lightCapabilitiesStreaming{
 								Renderer: true,
 								Proxy:    true,
 							},
 						},
-						Config: hueLightConfig{
+						Config: lightConfig{
 							ArcheType: "sultanbulb",
 							Function:  "mixed",
 							Direction: "omnidirectional",

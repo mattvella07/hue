@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-type hueLightState struct {
+type lightState struct {
 	On        bool      `json:"on"`
 	Bri       int       `json:"bri"`
 	Hue       int       `json:"hue"`
@@ -23,36 +23,36 @@ type hueLightState struct {
 	Reachable bool      `json:"reachable"`
 }
 
-type hueLightSWUpdate struct {
+type lightSWUpdate struct {
 	State       string `json:"state"`
 	LastInstall string `json:"lastinstall"`
 }
 
-type hueLightCapabilitiesCT struct {
+type lightCapabilitiesCT struct {
 	Min int `json:"min"`
 	Max int `json:"max"`
 }
 
-type hueLightCapabilitiesControl struct {
-	MindimLevel    int                    `json:"mindimlevel"`
-	MaxLumen       int                    `json:"maxlumen"`
-	ColorGamutType string                 `json:"colorgamuttype"`
-	ColorGamut     [][]float32            `json:"colorgamut"`
-	CT             hueLightCapabilitiesCT `json:"ct"`
+type lightCapabilitiesControl struct {
+	MindimLevel    int                 `json:"mindimlevel"`
+	MaxLumen       int                 `json:"maxlumen"`
+	ColorGamutType string              `json:"colorgamuttype"`
+	ColorGamut     [][]float32         `json:"colorgamut"`
+	CT             lightCapabilitiesCT `json:"ct"`
 }
 
-type hueLightCapabilitiesStreaming struct {
+type lightCapabilitiesStreaming struct {
 	Renderer bool `json:"renderer"`
 	Proxy    bool `json:"proxy"`
 }
 
-type hueLightCapabilities struct {
-	Certified bool                          `json:"certified"`
-	Control   hueLightCapabilitiesControl   `json:"control"`
-	Streaming hueLightCapabilitiesStreaming `json:"streaming"`
+type lightCapabilities struct {
+	Certified bool                       `json:"certified"`
+	Control   lightCapabilitiesControl   `json:"control"`
+	Streaming lightCapabilitiesStreaming `json:"streaming"`
 }
 
-type hueLightConfig struct {
+type lightConfig struct {
 	ArcheType string `json:"archetype"`
 	Function  string `json:"function"`
 	Direction string `json:"direction"`
@@ -61,19 +61,19 @@ type hueLightConfig struct {
 // Light contains all data returned from the Phillips Hue API
 // for an individual Phillips Hue light
 type Light struct {
-	State            hueLightState        `json:"state"`
-	SWUpdate         hueLightSWUpdate     `json:"swupdate"`
-	Type             string               `json:"type"`
-	Name             string               `json:"name"`
-	ModelID          string               `json:"modelid"`
-	ManufacturerName string               `json:"manufacturername"`
-	ProductName      string               `json:"productname"`
-	Capabilities     hueLightCapabilities `json:"capabilities"`
-	Config           hueLightConfig       `json:"config"`
-	UniqueID         string               `json:"uniqueid"`
-	SWVersion        string               `json:"swversion"`
-	SWConfigID       string               `json:"swconfigid"`
-	ProductID        string               `json:"productid"`
+	State            lightState        `json:"state"`
+	SWUpdate         lightSWUpdate     `json:"swupdate"`
+	Type             string            `json:"type"`
+	Name             string            `json:"name"`
+	ModelID          string            `json:"modelid"`
+	ManufacturerName string            `json:"manufacturername"`
+	ProductName      string            `json:"productname"`
+	Capabilities     lightCapabilities `json:"capabilities"`
+	Config           lightConfig       `json:"config"`
+	UniqueID         string            `json:"uniqueid"`
+	SWVersion        string            `json:"swversion"`
+	SWConfigID       string            `json:"swconfigid"`
+	ProductID        string            `json:"productid"`
 }
 
 // NewLight contains all data for a new Phillips Hue light
