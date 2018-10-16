@@ -388,7 +388,7 @@ func (h *Connection) RenameLight(light int, name string) error {
 	}
 
 	client := &http.Client{}
-	reqBody := strings.NewReader(fmt.Sprintf("{ \"name\": %s }", name))
+	reqBody := strings.NewReader(fmt.Sprintf("{ \"name\": \"%s\" }", name))
 	req, err := http.NewRequest("PUT", fmt.Sprintf("%s/lights/%d", h.baseURL, light), reqBody)
 	if err != nil {
 		return err
