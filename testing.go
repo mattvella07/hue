@@ -7,6 +7,23 @@ import (
 	"net/http/httptest"
 )
 
+type lightTestData struct {
+	One Light `json:"1"`
+}
+
+type newLightTest struct {
+	Name string `json:"name"`
+}
+
+type newLightTestData struct {
+	Five     newLightTest `json:"5"`
+	LastScan string       `json:"lastscan"`
+}
+
+type groupTestData struct {
+	One Group `json:"1"`
+}
+
 func createTestConnection(scenario int) (Connection, *httptest.Server) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.String() {

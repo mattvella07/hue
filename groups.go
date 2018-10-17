@@ -84,7 +84,7 @@ func (h *Connection) GetAllGroups() ([]Group, error) {
 						return nil, err
 					}
 
-					group.ID = count
+					group.ID = count - 1
 
 					allGroups = append(allGroups, group)
 				}
@@ -105,14 +105,14 @@ func (h *Connection) GetAllGroups() ([]Group, error) {
 					return nil, err
 				}
 
-				group.ID = count
-				count++
+				group.ID = count - 1
 
 				allGroups = append(allGroups, group)
 			}
 
 			fullResponse = strings.Replace(fullResponse, fmt.Sprintf("\"%d\":", count), "", 1)
 			fullResponse = strings.Replace(fullResponse, tmpArray[0], "", 1)
+			count++
 		}
 	}
 

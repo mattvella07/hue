@@ -26,7 +26,7 @@ func main() {
 
 	//Turn on light 1
 	//err = h.TurnOnLight(2)
-	err = h.TurnOnLightWithColor(2, 0.2, 0.9, 100, 200, 200)
+	err = h.TurnOnLightWithColor(4, 0.2, 0.9, 100, 200, 200)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -35,7 +35,7 @@ func main() {
 	time.Sleep(time.Second * 3)
 
 	//Turn off light 1
-	err = h.TurnOffLight(2)
+	err = h.TurnOffLight(4)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -44,4 +44,12 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+
+	groups, err := h.GetAllGroups()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Printf("Found %d lights\n", len(groups))
+	fmt.Println(groups)
 }

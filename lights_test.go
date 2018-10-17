@@ -4,19 +4,6 @@ import (
 	"testing"
 )
 
-type lightTestData struct {
-	One Light `json:"1"`
-}
-
-type newLightTest struct {
-	Name string `json:"name"`
-}
-
-type newLightTestData struct {
-	Five     newLightTest `json:"5"`
-	LastScan string       `json:"lastscan"`
-}
-
 func TestGetAllLights(t *testing.T) {
 	t.Run("One light found", func(t *testing.T) {
 		h, server := createTestConnection(1)

@@ -143,7 +143,7 @@ func (h *Connection) GetAllLights() ([]Light, error) {
 						return nil, err
 					}
 
-					light.ID = count
+					light.ID = count - 1
 
 					allLights = append(allLights, light)
 				}
@@ -164,14 +164,14 @@ func (h *Connection) GetAllLights() ([]Light, error) {
 					return nil, err
 				}
 
-				light.ID = count
-				count++
+				light.ID = count - 1
 
 				allLights = append(allLights, light)
 			}
 
 			fullResponse = strings.Replace(fullResponse, fmt.Sprintf("\"%d\":", count), "", 1)
 			fullResponse = strings.Replace(fullResponse, tmpArray[0], "", 1)
+			count++
 		}
 	}
 

@@ -4,10 +4,6 @@ import (
 	"testing"
 )
 
-type groupTestData struct {
-	One Group `json:"1"`
-}
-
 func TestGetAllGroups(t *testing.T) {
 	t.Run("One group found", func(t *testing.T) {
 		h, server := createTestConnection(1)
