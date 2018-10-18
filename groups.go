@@ -118,3 +118,27 @@ func (h *Connection) GetAllGroups() ([]Group, error) {
 
 	return allGroups, nil
 }
+
+// CreateGroup creates a new group with the specified name consisting of the specified
+// lights. The group is added to the bridge using the next available ID.
+func (h *Connection) CreateGroup(name, groupType string, lights []string) error {
+	// POST - %s/groups
+	// Body example -
+	/*
+		{
+			"lights": ["1", "2"],
+			"name": "bedroom",
+			"type": "LightGroup"
+		}
+		OR if type is Room:
+		{
+			"lights": ["1", "2"],
+			"name": "Living room",
+			"type": "Room",
+			"class": "Living room"
+		}
+	*/
+	// Response example - [{"success": {"id": "1"}}]
+
+	return nil
+}
