@@ -9,6 +9,11 @@ import (
 	"strings"
 )
 
+type groupState struct {
+	AllOn bool `json:"all_on"`
+	AnyOn bool `json:"any_on"`
+}
+
 type groupAction struct {
 	On        bool      `json:"on"`
 	Bri       int       `json:"bri"`
@@ -24,11 +29,14 @@ type groupAction struct {
 // Group contains all data returned from the Phillips Hue API
 // for an individual Phillips Hue light group
 type Group struct {
-	Name   string      `json:"name"`
-	Lights []string    `json:"lights"`
-	Type   string      `json:"type"`
-	Action groupAction `json:"action"`
-	ID     int         `json:"id"`
+	Name    string      `json:"name"`
+	Lights  []string    `json:"lights"`
+	Sensors []string    `json:"sensors"`
+	Type    string      `json:"type"`
+	State   groupState  `json:"state"`
+	Recycle bool        `json:"recycle"`
+	Action  groupAction `json:"action"`
+	ID      int         `json:"id"`
 }
 
 // GetAllGroups gets all Phillips Hue light groups connected to current bridge
@@ -94,11 +102,6 @@ func (h *Connection) GetAllGroups() ([]Group, error) {
 			if tmpArray[0] != "" {
 				// Remove leading or trailing commas
 				tmpArray[0] = strings.Trim(tmpArray[0], ",")
-
-				// If sting ends in two curly braces remove one
-				if strings.LastIndex(tmpArray[0], "}}") == len(tmpArray[0])-2 {
-					tmpArray[0] = tmpArray[0][0 : len(tmpArray[0])-1]
-				}
 
 				err = json.Unmarshal([]byte(tmpArray[0]), &group)
 				if err != nil {

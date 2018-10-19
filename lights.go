@@ -154,11 +154,6 @@ func (h *Connection) GetAllLights() ([]Light, error) {
 				// Remove leading or trailing commas
 				tmpArray[0] = strings.Trim(tmpArray[0], ",")
 
-				// If sting ends in two curly braces remove one
-				if strings.LastIndex(tmpArray[0], "}}") == len(tmpArray[0])-2 {
-					tmpArray[0] = tmpArray[0][0 : len(tmpArray[0])-1]
-				}
-
 				err = json.Unmarshal([]byte(tmpArray[0]), &light)
 				if err != nil {
 					return nil, err
