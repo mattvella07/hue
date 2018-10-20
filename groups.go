@@ -124,8 +124,41 @@ func (h *Connection) GetAllGroups() ([]Group, error) {
 
 // CreateGroup creates a new group with the specified name consisting of the specified
 // lights. The group is added to the bridge using the next available ID.
-func (h *Connection) CreateGroup(name, groupType string, lights []string) error {
-	// POST - %s/groups
+func (h *Connection) CreateGroup(name, groupType, class string, lights []string) error {
+	// Error checking
+	name = strings.Trim(name, " ")
+	if name == "" {
+		return fmt.Errorf("Name must not be empty")
+	}
+
+	// LightGroup is the default group
+	groupType = strings.Trim(groupType, " ")
+	if groupType == "" {
+		groupType = "LightGroup"
+	}
+
+	// LightGroup, Room, and Entertainment are valid groups
+	if groupType != "LightGroup" && groupType != "Room" && groupType != "Entertainment" {
+		return fmt.Errorf("Group Type must be one of the following: LightGroup, Room, Entertainment")
+	}
+
+	// Check that all lights are valid
+	for _, light := range lights {
+		lightNum, err := strconv.Atoi(light)
+		if err != nil {
+			return fmt.Errorf("Light %s not found", light)
+		}
+
+		if !h.doesLightExist(lightNum) {
+			return fmt.Errorf("Light %s not found", light)
+		}
+	}
+
+	err := h.initializeHue()
+	if err != nil {
+		return err
+	}
+
 	// Body example -
 	/*
 		{
@@ -141,7 +174,31 @@ func (h *Connection) CreateGroup(name, groupType string, lights []string) error 
 			"class": "Living room"
 		}
 	*/
-	// Response example - [{"success": {"id": "1"}}]
+
+	client := &http.Client{}
+	reqBody := strings.NewReader(fmt.Sprintf("{\"name\": \"%s\", \"type\": \"%s\", \"lights\": %s}", name, groupType, lights))
+	req, err := http.NewRequest("POST", fmt.Sprintf("%s/groups", h.baseURL), reqBody)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return err
+	}
+
+	fullResponse := string(body)
+	fullResponse = strings.ToLower(fullResponse)
+
+	if !strings.Contains(fullResponse, "success") {
+		return fmt.Errorf("Unable to create group %s", name)
+	}
 
 	return nil
 }

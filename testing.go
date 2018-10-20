@@ -182,36 +182,40 @@ func createTestConnection(scenario int) (Connection, *httptest.Server) {
 				w.Write(nil)
 			}
 		case "/groups":
-			// One group
-			if scenario == 1 {
-				data := groupTestData{
-					One: Group{
-						Name:   "Group 1",
-						Lights: []string{"1", "2"},
-						Type:   "LightGroup",
-						Action: groupAction{
-							On:        false,
-							Bri:       100,
-							Hue:       200,
-							Sat:       250,
-							Effect:    "none",
-							XY:        []float32{0.3, 0.4},
-							CT:        250,
-							Alert:     "select",
-							ColorMode: "ct",
+			if r.Method == "GET" {
+				if scenario == 1 {
+					// One group
+					data := groupTestData{
+						One: Group{
+							Name:   "Group 1",
+							Lights: []string{"1", "2"},
+							Type:   "LightGroup",
+							Action: groupAction{
+								On:        false,
+								Bri:       100,
+								Hue:       200,
+								Sat:       250,
+								Effect:    "none",
+								XY:        []float32{0.3, 0.4},
+								CT:        250,
+								Alert:     "select",
+								ColorMode: "ct",
+							},
 						},
-					},
-				}
+					}
 
-				returnData, err := json.Marshal(data)
-				if err != nil {
-					fmt.Println("ERR: ", err)
-				}
+					returnData, err := json.Marshal(data)
+					if err != nil {
+						fmt.Println("ERR: ", err)
+					}
 
-				w.Write(returnData)
-			} else if scenario == 2 {
-				// No groups
-				w.Write(nil)
+					w.Write(returnData)
+				} else if scenario == 2 {
+					// No groups
+					w.Write(nil)
+				}
+			} else if r.Method == "POST" {
+				w.Write([]byte("[{\"success\":{\"id\":\"1\"}}]"))
 			}
 		}
 	}))

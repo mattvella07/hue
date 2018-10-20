@@ -67,3 +67,96 @@ func TestGetAllGroups(t *testing.T) {
 		}
 	})
 }
+
+func TestCreateGroup(t *testing.T) {
+	t.Run("Successful group creation - LightGroup", func(t *testing.T) {
+		h, server := createTestConnection(1)
+		defer server.Close()
+
+		err := h.CreateGroup("New Group", "LightGroup", "", []string{"1"})
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("Successful group creation - Room", func(t *testing.T) {
+		h, server := createTestConnection(1)
+		defer server.Close()
+
+		err := h.CreateGroup("New Group", "Room", "", []string{"1"})
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("Successful group creation - Entertainment", func(t *testing.T) {
+		h, server := createTestConnection(1)
+		defer server.Close()
+
+		err := h.CreateGroup("New Group", "Entertainment", "", []string{"1"})
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("Successful group creation - Empty group name", func(t *testing.T) {
+		h, server := createTestConnection(1)
+		defer server.Close()
+
+		err := h.CreateGroup("New Group", "", "", []string{"1"})
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("Invalid group name", func(t *testing.T) {
+		h, server := createTestConnection(1)
+		defer server.Close()
+
+		err := h.CreateGroup("", "LightGroup", "", []string{"1"})
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		{
+			expected := "Name must not be empty"
+			if err.Error() != expected {
+				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
+			}
+		}
+	})
+
+	t.Run("Invalid group type", func(t *testing.T) {
+		h, server := createTestConnection(1)
+		defer server.Close()
+
+		err := h.CreateGroup("New Group", "InvalidGroupType", "", []string{"1"})
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		{
+			expected := "Group Type must be one of the following: LightGroup, Room, Entertainment"
+			if err.Error() != expected {
+				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
+			}
+		}
+	})
+
+	t.Run("Invalid light id", func(t *testing.T) {
+		h, server := createTestConnection(1)
+		defer server.Close()
+
+		err := h.CreateGroup("New Group", "LightGroup", "", []string{"3"})
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		{
+			expected := "Light 3 not found"
+			if err.Error() != expected {
+				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
+			}
+		}
+	})
+}
