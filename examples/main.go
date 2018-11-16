@@ -51,4 +51,12 @@ func main() {
 
 	fmt.Printf("Found %d groups\n", len(groups))
 	fmt.Println(groups)
+
+	// CreateGroup(name, groupType, class string, lights []string) error
+	err = h.CreateGroup("Blah New Group", "Room", "", []string{"4"})
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Println("Group added!")
 }

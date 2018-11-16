@@ -137,13 +137,19 @@ func (h *Connection) CreateGroup(name, groupType, class string, lights []string)
 		groupType = "LightGroup"
 	}
 
-	// LightGroup, Room, and Entertainment are valid groups
-	if groupType != "LightGroup" && groupType != "Room" && groupType != "Entertainment" {
-		return fmt.Errorf("Group Type must be one of the following: LightGroup, Room, Entertainment")
+	// LightGroup, Room, Luminaire, and LightSource = are valid groups
+	if groupType != "LightGroup" && groupType != "Room" && groupType != "Luminaire" && groupType != "LightSource" {
+		return fmt.Errorf("Group Type must be one of the following: LightGroup, Room, Luminaire, LightSource")
+	}
+
+	// Other is the default class
+	class = strings.Trim(class, " ")
+	if class == "" {
+		class = "Other"
 	}
 
 	// Check that all lights are valid
-	for _, light := range lights {
+	for idx, light := range lights {
 		lightNum, err := strconv.Atoi(light)
 		if err != nil {
 			return fmt.Errorf("Light %s not found", light)
@@ -152,6 +158,9 @@ func (h *Connection) CreateGroup(name, groupType, class string, lights []string)
 		if !h.doesLightExist(lightNum) {
 			return fmt.Errorf("Light %s not found", light)
 		}
+
+		// Add quotes around light number
+		lights[idx] = fmt.Sprintf("\"%s\"", lights[idx])
 	}
 
 	err := h.initializeHue()
@@ -159,24 +168,8 @@ func (h *Connection) CreateGroup(name, groupType, class string, lights []string)
 		return err
 	}
 
-	// Body example -
-	/*
-		{
-			"lights": ["1", "2"],
-			"name": "bedroom",
-			"type": "LightGroup"
-		}
-		OR if type is Room:
-		{
-			"lights": ["1", "2"],
-			"name": "Living room",
-			"type": "Room",
-			"class": "Living room"
-		}
-	*/
-
 	client := &http.Client{}
-	reqBody := strings.NewReader(fmt.Sprintf("{\"name\": \"%s\", \"type\": \"%s\", \"lights\": %s}", name, groupType, lights))
+	reqBody := strings.NewReader(fmt.Sprintf("{\"name\": \"%s\", \"type\": \"%s\", \"class\": \"%s\", \"lights\": %v}", name, groupType, class, lights))
 	req, err := http.NewRequest("POST", fmt.Sprintf("%s/groups", h.baseURL), reqBody)
 	if err != nil {
 		return err
@@ -197,7 +190,8 @@ func (h *Connection) CreateGroup(name, groupType, class string, lights []string)
 	fullResponse = strings.ToLower(fullResponse)
 
 	if !strings.Contains(fullResponse, "success") {
-		return fmt.Errorf("Unable to create group %s", name)
+		errMsg := fullResponse[strings.Index(fullResponse, "description")+14 : strings.LastIndex(fullResponse, "\"")]
+		return fmt.Errorf("Unable to create group %s: %s", name, errMsg)
 	}
 
 	return nil

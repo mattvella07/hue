@@ -89,11 +89,21 @@ func TestCreateGroup(t *testing.T) {
 		}
 	})
 
-	t.Run("Successful group creation - Entertainment", func(t *testing.T) {
+	t.Run("Successful group creation - Luminaire", func(t *testing.T) {
 		h, server := createTestConnection(1)
 		defer server.Close()
 
-		err := h.CreateGroup("New Group", "Entertainment", "", []string{"1"})
+		err := h.CreateGroup("New Group", "Luminaire", "", []string{"1"})
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("Successful group creation - LightSource", func(t *testing.T) {
+		h, server := createTestConnection(1)
+		defer server.Close()
+
+		err := h.CreateGroup("New Group", "LightSource", "", []string{"1"})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -136,7 +146,7 @@ func TestCreateGroup(t *testing.T) {
 		}
 
 		{
-			expected := "Group Type must be one of the following: LightGroup, Room, Entertainment"
+			expected := "Group Type must be one of the following: LightGroup, Room, Luminaire, LightSource"
 			if err.Error() != expected {
 				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
 			}
