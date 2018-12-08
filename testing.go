@@ -217,6 +217,33 @@ func createTestConnection(scenario int) (Connection, *httptest.Server) {
 			} else if r.Method == "POST" {
 				w.Write([]byte("[{\"success\":{\"id\":\"1\"}}]"))
 			}
+		case "/groups/1":
+			if scenario == 1 {
+				// One Group
+				data := Group{
+					Name:   "Group 1",
+					Lights: []string{"1", "2"},
+					Type:   "LightGroup",
+					Action: groupAction{
+						On:        false,
+						Bri:       100,
+						Hue:       200,
+						Sat:       250,
+						Effect:    "none",
+						XY:        []float32{0.3, 0.4},
+						CT:        250,
+						Alert:     "select",
+						ColorMode: "ct",
+					},
+				}
+
+				returnData, err := json.Marshal(data)
+				if err != nil {
+					fmt.Println("ERR: ", err)
+				}
+
+				w.Write(returnData)
+			}
 		}
 	}))
 	return Connection{

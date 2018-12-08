@@ -1,6 +1,7 @@
 package hue
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -164,6 +165,37 @@ func TestCreateGroup(t *testing.T) {
 
 		{
 			expected := "Light 3 not found"
+			if err.Error() != expected {
+				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
+			}
+		}
+	})
+}
+
+func TestGetGroup(t *testing.T) {
+	t.Run("Group found", func(t *testing.T) {
+		h, server := createTestConnection(1)
+		defer server.Close()
+
+		group, err := h.GetGroup(1)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		fmt.Println(group)
+	})
+
+	t.Run("Group not found", func(t *testing.T) {
+		h, server := createTestConnection(2)
+		defer server.Close()
+
+		_, err := h.GetGroup(2)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		{
+			expected := "Group not found"
 			if err.Error() != expected {
 				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
 			}

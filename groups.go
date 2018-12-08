@@ -196,3 +196,57 @@ func (h *Connection) CreateGroup(name, groupType, class string, lights []string)
 
 	return nil
 }
+
+// GetGroup gets the specified Phillips Hue light group
+func (h *Connection) GetGroup(group int) (Group, error) {
+	err := h.initializeHue()
+	if err != nil {
+		return Group{}, err
+	}
+
+	resp, err := http.Get(fmt.Sprintf("%s/groups/%d", h.baseURL, group))
+	if err != nil {
+		return Group{}, err
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return Group{}, err
+	}
+
+	// Group not found
+	if len(body) == 0 {
+		return Group{}, fmt.Errorf("Group not found")
+	}
+
+	groupRes := Group{}
+
+	err = json.Unmarshal(body, &groupRes)
+	if err != nil {
+		return Group{}, err
+	}
+
+	return groupRes, nil
+}
+
+func (h *Connection) DeleteGroup(group int) error {
+	// Error checking:
+	// - Does group exist
+	// - Group type must not be LightSource or Luminaire
+
+	// DELETE - /api/<username>/groups/<id>
+
+	// Sample Response:
+	/*
+		[{
+			"success": "/groups/1 deleted."
+		}]
+	*/
+
+	return nil
+}
+
+func (h *Connection) doesGroupExist(group int) bool {
+
+	return true
+}
