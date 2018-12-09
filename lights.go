@@ -2,6 +2,7 @@ package hue
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -192,7 +193,7 @@ func (h *Connection) GetLight(light int) (Light, error) {
 
 	// Light not found
 	if len(body) == 0 {
-		return Light{}, fmt.Errorf("Light not found")
+		return Light{}, errors.New("Light not found")
 	}
 
 	lightRes := Light{}
@@ -226,7 +227,7 @@ func (h *Connection) GetNewLights() (NewLightResponse, error) {
 	fullResponse := string(body)
 
 	if len(fullResponse) <= 1 {
-		return NewLightResponse{}, fmt.Errorf("No new lights found")
+		return NewLightResponse{}, errors.New("No new lights found")
 	}
 
 	// Remove first and last character - { and }
@@ -248,14 +249,14 @@ func (h *Connection) GetNewLights() (NewLightResponse, error) {
 			// Must be at least 3 items after splitting by :
 			items := strings.Split(item, ":")
 			if len(items) < 3 {
-				return NewLightResponse{}, fmt.Errorf("Error processing result")
+				return NewLightResponse{}, errors.New("Error processing result")
 			}
 
 			// Remove " characters to get ID
 			if id, err := strconv.Atoi(strings.Replace(items[0], "\"", "", -1)); err == nil {
 				newLight.ID = id
 			} else {
-				return NewLightResponse{}, fmt.Errorf("Error processing result")
+				return NewLightResponse{}, errors.New("Error processing result")
 			}
 
 			// Remove " and } characters to get light name
@@ -309,6 +310,7 @@ func (h *Connection) changeLightState(light int, state string) error {
 		return err
 	}
 	defer res.Body.Close()
+
 	return nil
 }
 
@@ -316,7 +318,7 @@ func (h *Connection) changeLightState(light int, state string) error {
 func (h *Connection) TurnOnLight(light int) error {
 	// Error checking
 	if !h.doesLightExist(light) {
-		return fmt.Errorf("Light not found")
+		return fmt.Errorf("Light %d not found", light)
 	}
 
 	// Set state
@@ -335,27 +337,27 @@ func (h *Connection) TurnOnLight(light int) error {
 func (h *Connection) TurnOnLightWithColor(light int, x, y float32, bri, hue, sat int) error {
 	// Error checking
 	if !h.doesLightExist(light) {
-		return fmt.Errorf("Light not found")
+		return fmt.Errorf("Light %d not found", light)
 	}
 
 	if x < 0 || x > 1 {
-		return fmt.Errorf("Invalid color value: x must be between 0 and 1")
+		return errors.New("Invalid color value: x must be between 0 and 1")
 	}
 
 	if y < 0 || y > 1 {
-		return fmt.Errorf("Invalid color value: y must be between 0 and 1")
+		return errors.New("Invalid color value: y must be between 0 and 1")
 	}
 
 	if bri < 1 || bri > 254 {
-		return fmt.Errorf("Invalid brightness value: bri must be between 1 and 254")
+		return errors.New("Invalid brightness value: bri must be between 1 and 254")
 	}
 
 	if hue < 0 || hue > 65535 {
-		return fmt.Errorf("Invalid hue value: hue must be between 0 and 65,535")
+		return errors.New("Invalid hue value: hue must be between 0 and 65,535")
 	}
 
 	if sat < 0 || sat > 254 {
-		return fmt.Errorf("Invalid saturation value: sat must be between 0 and 254")
+		return errors.New("Invalid saturation value: sat must be between 0 and 254")
 	}
 
 	// Set state
@@ -373,7 +375,7 @@ func (h *Connection) TurnOnLightWithColor(light int, x, y float32, bri, hue, sat
 func (h *Connection) TurnOffLight(light int) error {
 	// Error checking
 	if !h.doesLightExist(light) {
-		return fmt.Errorf("Light not found")
+		return fmt.Errorf("Light %d not found", light)
 	}
 
 	// Set state
@@ -391,11 +393,11 @@ func (h *Connection) TurnOffLight(light int) error {
 func (h *Connection) RenameLight(light int, name string) error {
 	// Error checking
 	if !h.doesLightExist(light) {
-		return fmt.Errorf("Light not found")
+		return fmt.Errorf("Light %d not found", light)
 	}
 
 	if strings.Trim(name, " ") == "" {
-		return fmt.Errorf("Name must not be empty")
+		return errors.New("Name must not be empty")
 	}
 
 	client := &http.Client{}
@@ -430,7 +432,7 @@ func (h *Connection) RenameLight(light int, name string) error {
 func (h *Connection) DeleteLight(light int) error {
 	// Error checking
 	if !h.doesLightExist(light) {
-		return fmt.Errorf("Light not found")
+		return fmt.Errorf("Light %d not found", light)
 	}
 
 	client := &http.Client{}

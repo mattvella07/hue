@@ -51,12 +51,40 @@ func main() {
 
 	fmt.Printf("Found %d groups\n", len(groups))
 	fmt.Println(groups)
-
-	// CreateGroup(name, groupType, class string, lights []string) error
-	err = h.CreateGroup("Blah New Group", "Room", "", []string{"4"})
-	if err != nil {
-		log.Fatalln(err)
+	for _, g := range groups {
+		fmt.Println(fmt.Sprintf("%s: %s", g.Name, g.Type))
 	}
 
-	fmt.Println("Group added!")
+	// err = h.CreateGroup("Blah New Group", "Room", "", []int{3, 4})
+	// if err != nil {
+	// 	log.Fatalln(err)
+	// }
+
+	// fmt.Println("Group added!")
+
+	// err = h.DeleteGroup(8)
+	// if err != nil {
+	// 	fmt.Println("err: ", err)
+	// }
+
+	// err = h.RenameGroup(7, "Living Room")
+	// if err != nil {
+	// 	log.Fatalln(err)
+	// }
+
+	// fmt.Println("Updated room name")
+
+	// err = h.SetLightsInGroup(7, []int{3, 4})
+	// if err != nil {
+	// 	log.Fatalln(err)
+	// }
+
+	// fmt.Println("Updated lights in group")
+
+	// err = h.SetGroupClass(7, "Other")
+	// if err != nil {
+	// 	log.Fatalln(err)
+	// }
+
+	// fmt.Println("Updated class name")
 }

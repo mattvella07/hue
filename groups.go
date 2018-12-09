@@ -2,6 +2,7 @@ package hue
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -124,11 +125,11 @@ func (h *Connection) GetAllGroups() ([]Group, error) {
 
 // CreateGroup creates a new group with the specified name consisting of the specified
 // lights. The group is added to the bridge using the next available ID.
-func (h *Connection) CreateGroup(name, groupType, class string, lights []string) error {
+func (h *Connection) CreateGroup(name, groupType, class string, lights []int) error {
 	// Error checking
 	name = strings.Trim(name, " ")
 	if name == "" {
-		return fmt.Errorf("Name must not be empty")
+		return errors.New("Name must not be empty")
 	}
 
 	// LightGroup is the default group
@@ -137,9 +138,9 @@ func (h *Connection) CreateGroup(name, groupType, class string, lights []string)
 		groupType = "LightGroup"
 	}
 
-	// LightGroup, Room, Luminaire, and LightSource = are valid groups
+	// LightGroup, Room, Luminaire, and LightSource are valid groups
 	if groupType != "LightGroup" && groupType != "Room" && groupType != "Luminaire" && groupType != "LightSource" {
-		return fmt.Errorf("Group Type must be one of the following: LightGroup, Room, Luminaire, LightSource")
+		return errors.New("Group Type must be one of the following: LightGroup, Room, Luminaire, LightSource")
 	}
 
 	// Other is the default class
@@ -148,19 +149,8 @@ func (h *Connection) CreateGroup(name, groupType, class string, lights []string)
 		class = "Other"
 	}
 
-	// Check that all lights are valid
-	for idx, light := range lights {
-		lightNum, err := strconv.Atoi(light)
-		if err != nil {
-			return fmt.Errorf("Light %s not found", light)
-		}
-
-		if !h.doesLightExist(lightNum) {
-			return fmt.Errorf("Light %s not found", light)
-		}
-
-		// Add quotes around light number
-		lights[idx] = fmt.Sprintf("\"%s\"", lights[idx])
+	if !h.allLightsValid(lights) {
+		return errors.New("One of the lights is invalid")
 	}
 
 	err := h.initializeHue()
@@ -169,7 +159,7 @@ func (h *Connection) CreateGroup(name, groupType, class string, lights []string)
 	}
 
 	client := &http.Client{}
-	reqBody := strings.NewReader(fmt.Sprintf("{\"name\": \"%s\", \"type\": \"%s\", \"class\": \"%s\", \"lights\": %v}", name, groupType, class, lights))
+	reqBody := strings.NewReader(fmt.Sprintf("{\"name\": \"%s\", \"type\": \"%s\", \"class\": \"%s\", \"lights\": %s}", name, groupType, class, h.formatSlice(lights)))
 	req, err := http.NewRequest("POST", fmt.Sprintf("%s/groups", h.baseURL), reqBody)
 	if err != nil {
 		return err
@@ -216,7 +206,7 @@ func (h *Connection) GetGroup(group int) (Group, error) {
 
 	// Group not found
 	if len(body) == 0 {
-		return Group{}, fmt.Errorf("Group not found")
+		return Group{}, errors.New("Group not found")
 	}
 
 	groupRes := Group{}
@@ -229,24 +219,165 @@ func (h *Connection) GetGroup(group int) (Group, error) {
 	return groupRes, nil
 }
 
+// RenameGroup renames the specified Phillips Hue group
+func (h *Connection) RenameGroup(group int, name string) error {
+	// Error checking
+	if !h.doesGroupExist(group) {
+		return fmt.Errorf("Group %d not found", group)
+	}
+
+	if strings.Trim(name, " ") == "" {
+		return errors.New("Name must not be empty")
+	}
+
+	attributes := fmt.Sprintf("{ \"name\": \"%s\" }", name)
+
+	err := h.changeGroupAttributes(group, attributes)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// SetLightsInGroup sets the lights that are in the specified Phillips Hue group
+func (h *Connection) SetLightsInGroup(group int, lights []int) error {
+	// Error checking
+	if !h.doesGroupExist(group) {
+		return fmt.Errorf("Group %d not found", group)
+	}
+
+	if !h.allLightsValid(lights) {
+		return errors.New("One of the lights is invalid")
+	}
+
+	attributes := fmt.Sprintf("{ \"lights\": %s }", h.formatSlice(lights))
+
+	err := h.changeGroupAttributes(group, attributes)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// SetGroupClass sets the class for the specified Phillips Hue group
+func (h *Connection) SetGroupClass(group int, class string) error {
+	// Error checking
+	if !h.doesGroupExist(group) {
+		return fmt.Errorf("Group %d not found", group)
+	}
+
+	if strings.Trim(class, " ") == "" {
+		return errors.New("Class must not be empty")
+	}
+
+	attributes := fmt.Sprintf("{ \"class\": \"%s\" }", class)
+
+	err := h.changeGroupAttributes(group, attributes)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// 2.5 Set Group State
+
+// DeleteGroup deletes the specified Phillips Hue light group
 func (h *Connection) DeleteGroup(group int) error {
-	// Error checking:
-	// - Does group exist
-	// - Group type must not be LightSource or Luminaire
+	// Error checking
+	currentGroup, err := h.GetGroup(group)
+	if err != nil {
+		return fmt.Errorf("Group %d not found", group)
+	}
 
-	// DELETE - /api/<username>/groups/<id>
+	// Groups with type LightSource or Luminaire can't be deleted
+	if currentGroup.Type == "LightSource" || currentGroup.Type == "Luminaire" {
+		return fmt.Errorf("Unable to delete group %d: Can't delete group with a type of LightSource or Luminaire", group)
+	}
 
-	// Sample Response:
-	/*
-		[{
-			"success": "/groups/1 deleted."
-		}]
-	*/
+	client := &http.Client{}
+	req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/groups/%d", h.baseURL, group), nil)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	_, err = ioutil.ReadAll(res.Body)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
 
 func (h *Connection) doesGroupExist(group int) bool {
+	// If GetGroup returns an error, then the group doesn't exist
+	_, err := h.GetGroup(group)
+	if err != nil {
+		return false
+	}
 
 	return true
+}
+
+func (h *Connection) allLightsValid(lights []int) bool {
+	for _, light := range lights {
+		if !h.doesLightExist(light) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func (h *Connection) formatSlice(sli []int) string {
+	str := "["
+	for _, s := range sli {
+		str += fmt.Sprintf("\"%d\",", s)
+	}
+	str = str[:len(str)-1]
+	str += "]"
+
+	return str
+}
+
+func (h *Connection) changeGroupAttributes(group int, attributes string) error {
+	err := h.initializeHue()
+	if err != nil {
+		return err
+	}
+
+	client := &http.Client{}
+	body := strings.NewReader(attributes)
+	req, err := http.NewRequest("PUT", fmt.Sprintf("%s/groups/%d", h.baseURL, group), body)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	data, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return err
+	}
+
+	dataStr := string(data)
+
+	if strings.Contains(dataStr, "error") {
+		errMsg := dataStr[strings.Index(dataStr, "\"description\":\"")+15 : strings.Index(dataStr, "\"}}]")]
+		return errors.New(errMsg)
+	}
+
+	return nil
 }

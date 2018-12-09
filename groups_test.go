@@ -1,7 +1,6 @@
 package hue
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -70,63 +69,48 @@ func TestGetAllGroups(t *testing.T) {
 }
 
 func TestCreateGroup(t *testing.T) {
-	t.Run("Successful group creation - LightGroup", func(t *testing.T) {
-		h, server := createTestConnection(1)
-		defer server.Close()
+	h, server := createTestConnection(1)
+	defer server.Close()
 
-		err := h.CreateGroup("New Group", "LightGroup", "", []string{"1"})
+	t.Run("Successful group creation - LightGroup", func(t *testing.T) {
+		err := h.CreateGroup("New Group", "LightGroup", "", []int{1})
 		if err != nil {
 			t.Fatal(err)
 		}
 	})
 
 	t.Run("Successful group creation - Room", func(t *testing.T) {
-		h, server := createTestConnection(1)
-		defer server.Close()
-
-		err := h.CreateGroup("New Group", "Room", "", []string{"1"})
+		err := h.CreateGroup("New Group", "Room", "", []int{1})
 		if err != nil {
 			t.Fatal(err)
 		}
 	})
 
 	t.Run("Successful group creation - Luminaire", func(t *testing.T) {
-		h, server := createTestConnection(1)
-		defer server.Close()
-
-		err := h.CreateGroup("New Group", "Luminaire", "", []string{"1"})
+		err := h.CreateGroup("New Group", "Luminaire", "", []int{1})
 		if err != nil {
 			t.Fatal(err)
 		}
 	})
 
 	t.Run("Successful group creation - LightSource", func(t *testing.T) {
-		h, server := createTestConnection(1)
-		defer server.Close()
-
-		err := h.CreateGroup("New Group", "LightSource", "", []string{"1"})
+		err := h.CreateGroup("New Group", "LightSource", "", []int{1})
 		if err != nil {
 			t.Fatal(err)
 		}
 	})
 
 	t.Run("Successful group creation - Empty group name", func(t *testing.T) {
-		h, server := createTestConnection(1)
-		defer server.Close()
-
-		err := h.CreateGroup("New Group", "", "", []string{"1"})
+		err := h.CreateGroup("New Group", "", "", []int{1})
 		if err != nil {
 			t.Fatal(err)
 		}
 	})
 
 	t.Run("Invalid group name", func(t *testing.T) {
-		h, server := createTestConnection(1)
-		defer server.Close()
-
-		err := h.CreateGroup("", "LightGroup", "", []string{"1"})
+		err := h.CreateGroup("", "LightGroup", "", []int{1})
 		if err == nil {
-			t.Fatal(err)
+			t.Fatal("Expected an error, got nil")
 		}
 
 		{
@@ -138,12 +122,9 @@ func TestCreateGroup(t *testing.T) {
 	})
 
 	t.Run("Invalid group type", func(t *testing.T) {
-		h, server := createTestConnection(1)
-		defer server.Close()
-
-		err := h.CreateGroup("New Group", "InvalidGroupType", "", []string{"1"})
+		err := h.CreateGroup("New Group", "InvalidGroupType", "", []int{1})
 		if err == nil {
-			t.Fatal(err)
+			t.Fatal("Expected an error, got nil")
 		}
 
 		{
@@ -155,16 +136,13 @@ func TestCreateGroup(t *testing.T) {
 	})
 
 	t.Run("Invalid light id", func(t *testing.T) {
-		h, server := createTestConnection(1)
-		defer server.Close()
-
-		err := h.CreateGroup("New Group", "LightGroup", "", []string{"3"})
+		err := h.CreateGroup("New Group", "LightGroup", "", []int{3})
 		if err == nil {
-			t.Fatal(err)
+			t.Fatal("Expected an error, got nil")
 		}
 
 		{
-			expected := "Light 3 not found"
+			expected := "One of the lights is invalid"
 			if err.Error() != expected {
 				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
 			}
@@ -182,7 +160,19 @@ func TestGetGroup(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		fmt.Println(group)
+		{
+			expected := "Group 1"
+			if group.Name != expected {
+				t.Fatalf("Expected Name to equal %s, got %s", expected, group.Name)
+			}
+		}
+
+		{
+			expected := "LightGroup"
+			if group.Type != expected {
+				t.Fatalf("Expected Type to equal %s, got %s", expected, group.Type)
+			}
+		}
 	})
 
 	t.Run("Group not found", func(t *testing.T) {
@@ -191,11 +181,157 @@ func TestGetGroup(t *testing.T) {
 
 		_, err := h.GetGroup(2)
 		if err == nil {
-			t.Fatal(err)
+			t.Fatal("Expected an error, got nil")
 		}
 
 		{
 			expected := "Group not found"
+			if err.Error() != expected {
+				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
+			}
+		}
+	})
+}
+
+func TestRenameGroup(t *testing.T) {
+	h, server := createTestConnection(1)
+	defer server.Close()
+
+	t.Run("Successful rename", func(t *testing.T) {
+		err := h.RenameGroup(1, "Group Renamed")
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("Group doesn't exist", func(t *testing.T) {
+		err := h.RenameGroup(3, "Group Renamed")
+		if err == nil {
+			t.Fatal("Expected an error, got nil")
+		}
+
+		{
+			expected := "Group 3 not found"
+			if err.Error() != expected {
+				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
+			}
+		}
+	})
+
+	t.Run("Invalid name", func(t *testing.T) {
+		err := h.RenameGroup(1, "")
+		if err == nil {
+			t.Fatal("Expected an error, got nil")
+		}
+
+		{
+			expected := "Name must not be empty"
+			if err.Error() != expected {
+				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
+			}
+		}
+	})
+}
+
+func TestSetLightsInGroup(t *testing.T) {
+	h, server := createTestConnection(1)
+	defer server.Close()
+
+	t.Run("Successful", func(t *testing.T) {
+		err := h.SetLightsInGroup(1, []int{2})
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("Group doesn't exist", func(t *testing.T) {
+		err := h.SetLightsInGroup(3, []int{2})
+		if err == nil {
+			t.Fatal("Expected an error, got nil")
+		}
+
+		{
+			expected := "Group 3 not found"
+			if err.Error() != expected {
+				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
+			}
+		}
+	})
+
+	t.Run("Invalid light", func(t *testing.T) {
+		err := h.SetLightsInGroup(1, []int{6})
+		if err == nil {
+			t.Fatal("Expected an error, got nil")
+		}
+
+		{
+			expected := "One of the lights is invalid"
+			if err.Error() != expected {
+				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
+			}
+		}
+	})
+}
+
+func TestSetGroupClass(t *testing.T) {
+	h, server := createTestConnection(1)
+	defer server.Close()
+
+	t.Run("Successful", func(t *testing.T) {
+		err := h.SetGroupClass(1, "Other")
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("Group doesn't exist", func(t *testing.T) {
+		err := h.SetGroupClass(3, "Other")
+		if err == nil {
+			t.Fatal("Expected an error, got nil")
+		}
+
+		{
+			expected := "Group 3 not found"
+			if err.Error() != expected {
+				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
+			}
+		}
+	})
+
+	t.Run("Invalid class", func(t *testing.T) {
+		err := h.SetGroupClass(1, "")
+		if err == nil {
+			t.Fatal("Expected an error, got nil")
+		}
+
+		{
+			expected := "Class must not be empty"
+			if err.Error() != expected {
+				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
+			}
+		}
+	})
+}
+
+func TestDeleteGroup(t *testing.T) {
+	h, server := createTestConnection(1)
+	defer server.Close()
+
+	t.Run("Successful", func(t *testing.T) {
+		err := h.DeleteGroup(1)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("Group doesn't exist", func(t *testing.T) {
+		err := h.DeleteGroup(3)
+		if err == nil {
+			t.Fatal("Expected an error, got nil")
+		}
+
+		{
+			expected := "Group 3 not found"
 			if err.Error() != expected {
 				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
 			}

@@ -99,7 +99,7 @@ func TestGetLight(t *testing.T) {
 
 		_, err := h.GetLight(1)
 		if err == nil {
-			t.Fatal(err)
+			t.Fatal("Expected an error, got nil")
 		}
 
 		{
@@ -156,7 +156,7 @@ func TestGetNewLights(t *testing.T) {
 
 		_, err := h.GetNewLights()
 		if err == nil {
-			t.Fatal(err)
+			t.Fatal("Expected an error, got nil")
 		}
 
 		{
@@ -179,10 +179,10 @@ func TestFindNewLights(t *testing.T) {
 }
 
 func TestTurnOnLight(t *testing.T) {
-	t.Run("Light exists", func(t *testing.T) {
-		h, server := createTestConnection(1)
-		defer server.Close()
+	h, server := createTestConnection(1)
+	defer server.Close()
 
+	t.Run("Light exists", func(t *testing.T) {
 		err := h.TurnOnLight(1)
 		if err != nil {
 			t.Fatal(err)
@@ -190,16 +190,13 @@ func TestTurnOnLight(t *testing.T) {
 	})
 
 	t.Run("Light doesn't exist", func(t *testing.T) {
-		h, server := createTestConnection(1)
-		defer server.Close()
-
 		err := h.TurnOnLight(3)
 		if err == nil {
-			t.Fatal(err)
+			t.Fatal("Expected an error, got nil")
 		}
 
 		{
-			expected := "Light not found"
+			expected := "Light 3 not found"
 			if err.Error() != expected {
 				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
 			}
@@ -208,10 +205,10 @@ func TestTurnOnLight(t *testing.T) {
 }
 
 func TestTurnOnLightWithColor(t *testing.T) {
-	t.Run("Light exists", func(t *testing.T) {
-		h, server := createTestConnection(1)
-		defer server.Close()
+	h, server := createTestConnection(1)
+	defer server.Close()
 
+	t.Run("Light exists", func(t *testing.T) {
 		err := h.TurnOnLightWithColor(1, 0.3, 0.2, 100, 200, 233)
 		if err != nil {
 			t.Fatal(err)
@@ -219,16 +216,13 @@ func TestTurnOnLightWithColor(t *testing.T) {
 	})
 
 	t.Run("Light doesn't exist", func(t *testing.T) {
-		h, server := createTestConnection(1)
-		defer server.Close()
-
 		err := h.TurnOnLightWithColor(3, 0.3, 0.2, 100, 200, 233)
 		if err == nil {
-			t.Fatal(err)
+			t.Fatal("Expected an error, got nil")
 		}
 
 		{
-			expected := "Light not found"
+			expected := "Light 3 not found"
 			if err.Error() != expected {
 				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
 			}
@@ -236,12 +230,9 @@ func TestTurnOnLightWithColor(t *testing.T) {
 	})
 
 	t.Run("Invalid x value", func(t *testing.T) {
-		h, server := createTestConnection(1)
-		defer server.Close()
-
 		err := h.TurnOnLightWithColor(1, 2, 0.2, 100, 200, 233)
 		if err == nil {
-			t.Fatal(err)
+			t.Fatal("Expected an error, got nil")
 		}
 
 		{
@@ -253,12 +244,9 @@ func TestTurnOnLightWithColor(t *testing.T) {
 	})
 
 	t.Run("Invalid y value", func(t *testing.T) {
-		h, server := createTestConnection(1)
-		defer server.Close()
-
 		err := h.TurnOnLightWithColor(1, 0.2, 3, 100, 200, 233)
 		if err == nil {
-			t.Fatal(err)
+			t.Fatal("Expected an error, got nil")
 		}
 
 		{
@@ -270,12 +258,9 @@ func TestTurnOnLightWithColor(t *testing.T) {
 	})
 
 	t.Run("Invalid bri value", func(t *testing.T) {
-		h, server := createTestConnection(1)
-		defer server.Close()
-
 		err := h.TurnOnLightWithColor(1, 0.3, 0.2, 300, 200, 233)
 		if err == nil {
-			t.Fatal(err)
+			t.Fatal("Expected an error, got nil")
 		}
 
 		{
@@ -287,12 +272,9 @@ func TestTurnOnLightWithColor(t *testing.T) {
 	})
 
 	t.Run("Invalid hue value", func(t *testing.T) {
-		h, server := createTestConnection(1)
-		defer server.Close()
-
 		err := h.TurnOnLightWithColor(1, 0.3, 0.2, 100, 65539, 233)
 		if err == nil {
-			t.Fatal(err)
+			t.Fatal("Expected an error, got nil")
 		}
 
 		{
@@ -304,12 +286,9 @@ func TestTurnOnLightWithColor(t *testing.T) {
 	})
 
 	t.Run("Invalid sat value", func(t *testing.T) {
-		h, server := createTestConnection(1)
-		defer server.Close()
-
 		err := h.TurnOnLightWithColor(1, 0.3, 0.2, 100, 200, 350)
 		if err == nil {
-			t.Fatal(err)
+			t.Fatal("Expected an error, got nil")
 		}
 
 		{
@@ -322,10 +301,10 @@ func TestTurnOnLightWithColor(t *testing.T) {
 }
 
 func TestTurnOffLight(t *testing.T) {
-	t.Run("Light exists", func(t *testing.T) {
-		h, server := createTestConnection(1)
-		defer server.Close()
+	h, server := createTestConnection(1)
+	defer server.Close()
 
+	t.Run("Light exists", func(t *testing.T) {
 		err := h.TurnOffLight(1)
 		if err != nil {
 			t.Fatal(err)
@@ -333,16 +312,13 @@ func TestTurnOffLight(t *testing.T) {
 	})
 
 	t.Run("Light doesn't exist", func(t *testing.T) {
-		h, server := createTestConnection(1)
-		defer server.Close()
-
 		err := h.TurnOffLight(3)
 		if err == nil {
-			t.Fatal(err)
+			t.Fatal("Expected an error, got nil")
 		}
 
 		{
-			expected := "Light not found"
+			expected := "Light 3 not found"
 			if err.Error() != expected {
 				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
 			}
@@ -351,10 +327,10 @@ func TestTurnOffLight(t *testing.T) {
 }
 
 func TestRenameLight(t *testing.T) {
-	t.Run("Successful rename", func(t *testing.T) {
-		h, server := createTestConnection(1)
-		defer server.Close()
+	h, server := createTestConnection(1)
+	defer server.Close()
 
+	t.Run("Successful rename", func(t *testing.T) {
 		err := h.RenameLight(1, "Light Renamed")
 		if err != nil {
 			t.Fatal(err)
@@ -362,16 +338,13 @@ func TestRenameLight(t *testing.T) {
 	})
 
 	t.Run("Light doesn't exist", func(t *testing.T) {
-		h, server := createTestConnection(1)
-		defer server.Close()
-
 		err := h.RenameLight(3, "Light Renamed")
 		if err == nil {
-			t.Fatal(err)
+			t.Fatal("Expected an error, got nil")
 		}
 
 		{
-			expected := "Light not found"
+			expected := "Light 3 not found"
 			if err.Error() != expected {
 				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
 			}
@@ -379,12 +352,9 @@ func TestRenameLight(t *testing.T) {
 	})
 
 	t.Run("Inavlid name", func(t *testing.T) {
-		h, server := createTestConnection(1)
-		defer server.Close()
-
 		err := h.RenameLight(1, "")
 		if err == nil {
-			t.Fatal(err)
+			t.Fatal("Expected an error, got nil")
 		}
 
 		{
@@ -397,10 +367,10 @@ func TestRenameLight(t *testing.T) {
 }
 
 func TestDeleteLight(t *testing.T) {
-	t.Run("Successful delete", func(t *testing.T) {
-		h, server := createTestConnection(1)
-		defer server.Close()
+	h, server := createTestConnection(1)
+	defer server.Close()
 
+	t.Run("Successful delete", func(t *testing.T) {
 		err := h.DeleteLight(1)
 		if err != nil {
 			t.Fatal(err)
@@ -408,16 +378,13 @@ func TestDeleteLight(t *testing.T) {
 	})
 
 	t.Run("Light doesn't exist", func(t *testing.T) {
-		h, server := createTestConnection(1)
-		defer server.Close()
-
 		err := h.DeleteLight(3)
 		if err == nil {
-			t.Fatal(err)
+			t.Fatal("Expected an error, got nil")
 		}
 
 		{
-			expected := "Light not found"
+			expected := "Light 3 not found"
 			if err.Error() != expected {
 				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
 			}
