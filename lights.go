@@ -340,30 +340,15 @@ func (h *Connection) TurnOnLightWithColor(light int, x, y float32, bri, hue, sat
 		return fmt.Errorf("Light %d not found", light)
 	}
 
-	if x < 0 || x > 1 {
-		return errors.New("Invalid color value: x must be between 0 and 1")
-	}
-
-	if y < 0 || y > 1 {
-		return errors.New("Invalid color value: y must be between 0 and 1")
-	}
-
-	if bri < 1 || bri > 254 {
-		return errors.New("Invalid brightness value: bri must be between 1 and 254")
-	}
-
-	if hue < 0 || hue > 65535 {
-		return errors.New("Invalid hue value: hue must be between 0 and 65,535")
-	}
-
-	if sat < 0 || sat > 254 {
-		return errors.New("Invalid saturation value: sat must be between 0 and 254")
+	err := h.validateColorParams(x, y, bri, hue, sat)
+	if err != nil {
+		return err
 	}
 
 	// Set state
 	state := fmt.Sprintf("{\"on\": true, \"xy\": [%f, %f], \"bri\": %d, \"hue\": %d, \"sat\": %d}", x, y, bri, hue, sat)
 
-	err := h.changeLightState(light, state)
+	err = h.changeLightState(light, state)
 	if err != nil {
 		return err
 	}
@@ -463,4 +448,28 @@ func (h *Connection) doesLightExist(light int) bool {
 	}
 
 	return true
+}
+
+func (h *Connection) validateColorParams(x, y float32, bri, hue, sat int) error {
+	if x < 0 || x > 1 {
+		return errors.New("Invalid color value: x must be between 0 and 1")
+	}
+
+	if y < 0 || y > 1 {
+		return errors.New("Invalid color value: y must be between 0 and 1")
+	}
+
+	if bri < 1 || bri > 254 {
+		return errors.New("Invalid brightness value: bri must be between 1 and 254")
+	}
+
+	if hue < 0 || hue > 65535 {
+		return errors.New("Invalid hue value: hue must be between 0 and 65,535")
+	}
+
+	if sat < 0 || sat > 254 {
+		return errors.New("Invalid saturation value: sat must be between 0 and 254")
+	}
+
+	return nil
 }

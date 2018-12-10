@@ -282,7 +282,47 @@ func (h *Connection) SetGroupClass(group int, class string) error {
 	return nil
 }
 
-// 2.5 Set Group State
+// TurnOnAllLightsInGroup turns on all lights in the specified Phillips Hue group
+// without setting the color
+func (h *Connection) TurnOnAllLightsInGroup(group int) error {
+	// Error checking
+	if !h.doesGroupExist(group) {
+		return fmt.Errorf("Group %d not found", group)
+	}
+
+	state := "{ \"on\": true }"
+
+	err := h.changeGroupState(group, state)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// TurnOnAllLightsInGroupWithColor turns on all lights in the specified Phillips Hue group
+// to the color specified by the x and y parameters. Also sets the Bri, Hue, and Sat
+// properties
+func (h *Connection) TurnOnAllLightsInGroupWithColor(group int, x, y float32, bri, hue, sat int) error {
+	// Error checking
+	if !h.doesGroupExist(group) {
+		return fmt.Errorf("Group %d not found", group)
+	}
+
+	err := h.validateColorParams(x, y, bri, hue, sat)
+	if err != nil {
+		return err
+	}
+
+	state := fmt.Sprintf("{\"on\": true, \"xy\": [%f, %f], \"bri\": %d, \"hue\": %d, \"sat\": %d}", x, y, bri, hue, sat)
+
+	err = h.changeGroupState(group, state)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 
 // DeleteGroup deletes the specified Phillips Hue light group
 func (h *Connection) DeleteGroup(group int) error {
@@ -378,6 +418,38 @@ func (h *Connection) changeGroupAttributes(group int, attributes string) error {
 		errMsg := dataStr[strings.Index(dataStr, "\"description\":\"")+15 : strings.Index(dataStr, "\"}}]")]
 		return errors.New(errMsg)
 	}
+
+	return nil
+}
+
+func (h *Connection) changeGroupState(group int, state string) error {
+	err := h.initializeHue()
+	if err != nil {
+		return err
+	}
+
+	client := &http.Client{}
+	body := strings.NewReader(state)
+	req, err := http.NewRequest("PUT", fmt.Sprintf("%s/groups/%d/action", h.baseURL, group), body)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	data, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return err
+	}
+
+	dataStr := string(data)
+
+	fmt.Println("RESPONSE")
+	fmt.Println(dataStr)
 
 	return nil
 }

@@ -87,4 +87,11 @@ func main() {
 	// }
 
 	// fmt.Println("Updated class name")
+
+	// err = h.TurnOnAllLightsInGroupWithColor(1, 0.2, 0.9, 100, 200, 200)
+	// if err != nil {
+	// 	log.Fatalln(err)
+	// }
+
+	// fmt.Println("Turned on all in group 1")
 }

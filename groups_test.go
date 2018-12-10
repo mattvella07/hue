@@ -338,3 +338,125 @@ func TestDeleteGroup(t *testing.T) {
 		}
 	})
 }
+
+func TestTurnOnAllLightsInGroup(t *testing.T) {
+	h, server := createTestConnection(1)
+	defer server.Close()
+
+	t.Run("Successful", func(t *testing.T) {
+		err := h.TurnOnAllLightsInGroup(1)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("Group doesn't exist", func(t *testing.T) {
+		err := h.TurnOnAllLightsInGroup(3)
+		if err == nil {
+			t.Fatal("Expected an error, got nil")
+		}
+
+		{
+			expected := "Group 3 not found"
+			if err.Error() != expected {
+				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
+			}
+		}
+	})
+}
+
+func TestTurnOnAllLightsInGroupWithColor(t *testing.T) {
+	h, server := createTestConnection(1)
+	defer server.Close()
+
+	t.Run("Successful", func(t *testing.T) {
+		err := h.TurnOnAllLightsInGroupWithColor(1, 0.3, 0.2, 100, 200, 233)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("Group doesn't exist", func(t *testing.T) {
+		err := h.TurnOnAllLightsInGroupWithColor(3, 0.3, 0.2, 100, 200, 233)
+		if err == nil {
+			t.Fatal("Expected an error, got nil")
+		}
+
+		{
+			expected := "Group 3 not found"
+			if err.Error() != expected {
+				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
+			}
+		}
+	})
+
+	t.Run("Invalid x value", func(t *testing.T) {
+		err := h.TurnOnAllLightsInGroupWithColor(1, 2, 0.2, 100, 200, 233)
+		if err == nil {
+			t.Fatal("Expected an error, got nil")
+		}
+
+		{
+			expected := "Invalid color value: x must be between 0 and 1"
+			if err.Error() != expected {
+				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
+			}
+		}
+	})
+
+	t.Run("Invalid y value", func(t *testing.T) {
+		err := h.TurnOnAllLightsInGroupWithColor(1, 0.2, 3, 100, 200, 233)
+		if err == nil {
+			t.Fatal("Expected an error, got nil")
+		}
+
+		{
+			expected := "Invalid color value: y must be between 0 and 1"
+			if err.Error() != expected {
+				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
+			}
+		}
+	})
+
+	t.Run("Invalid bri value", func(t *testing.T) {
+		err := h.TurnOnAllLightsInGroupWithColor(1, 0.3, 0.2, 300, 200, 233)
+		if err == nil {
+			t.Fatal("Expected an error, got nil")
+		}
+
+		{
+			expected := "Invalid brightness value: bri must be between 1 and 254"
+			if err.Error() != expected {
+				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
+			}
+		}
+	})
+
+	t.Run("Invalid hue value", func(t *testing.T) {
+		err := h.TurnOnAllLightsInGroupWithColor(1, 0.3, 0.2, 100, 65539, 233)
+		if err == nil {
+			t.Fatal("Expected an error, got nil")
+		}
+
+		{
+			expected := "Invalid hue value: hue must be between 0 and 65,535"
+			if err.Error() != expected {
+				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
+			}
+		}
+	})
+
+	t.Run("Invalid sat value", func(t *testing.T) {
+		err := h.TurnOnAllLightsInGroupWithColor(1, 0.3, 0.2, 100, 200, 350)
+		if err == nil {
+			t.Fatal("Expected an error, got nil")
+		}
+
+		{
+			expected := "Invalid saturation value: sat must be between 0 and 254"
+			if err.Error() != expected {
+				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
+			}
+		}
+	})
+}

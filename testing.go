@@ -248,6 +248,8 @@ func createTestConnection(scenario int) (Connection, *httptest.Server) {
 			} else if r.Method == "PUT" || r.Method == "DELETE" {
 				w.Write([]byte("[{\"success\":{\"/groups/1/\":\"Success\"}}]"))
 			}
+		case "/groups/1/action":
+			w.Write([]byte("[{\"success\":{\"/groups/1/action\":\"Success\"}}]"))
 		}
 	}))
 	return Connection{
