@@ -460,3 +460,29 @@ func TestTurnOnAllLightsInGroupWithColor(t *testing.T) {
 		}
 	})
 }
+
+func TestTurnOffAllLightsInGroup(t *testing.T) {
+	h, server := createTestConnection(1)
+	defer server.Close()
+
+	t.Run("Successful", func(t *testing.T) {
+		err := h.TurnOffAllLightsInGroup(1)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("Group doesn't exist", func(t *testing.T) {
+		err := h.TurnOffAllLightsInGroup(3)
+		if err == nil {
+			t.Fatal("Expected an error, got nil")
+		}
+
+		{
+			expected := "Group 3 not found"
+			if err.Error() != expected {
+				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
+			}
+		}
+	})
+}

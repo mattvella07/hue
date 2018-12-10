@@ -94,4 +94,11 @@ func main() {
 	// }
 
 	// fmt.Println("Turned on all in group 1")
+
+	err = h.TurnOffAllLightsInGroup(1)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Println("Turned off all lights in group 1")
 }

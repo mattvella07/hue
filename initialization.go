@@ -15,6 +15,7 @@ type Connection struct {
 	internalIPAddress string
 	UserID            string
 	baseURL           string
+	isInitialized     bool
 }
 
 type hueDiscoveryResponse struct {
@@ -44,6 +45,8 @@ func (h *Connection) initializeHue() error {
 	if h.baseURL == "" {
 		h.getBaseURL()
 	}
+
+	h.isInitialized = true
 
 	return nil
 }

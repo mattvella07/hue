@@ -324,6 +324,23 @@ func (h *Connection) TurnOnAllLightsInGroupWithColor(group int, x, y float32, br
 	return nil
 }
 
+// TurnOffAllLightsInGroup turns off all lights in the specified Phillips Hue group
+func (h *Connection) TurnOffAllLightsInGroup(group int) error {
+	// Error checking
+	if !h.doesGroupExist(group) {
+		return fmt.Errorf("Group %d not found", group)
+	}
+
+	state := "{ \"on\": false }"
+
+	err := h.changeGroupState(group, state)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // DeleteGroup deletes the specified Phillips Hue light group
 func (h *Connection) DeleteGroup(group int) error {
 	// Error checking
@@ -448,8 +465,10 @@ func (h *Connection) changeGroupState(group int, state string) error {
 
 	dataStr := string(data)
 
-	fmt.Println("RESPONSE")
-	fmt.Println(dataStr)
+	if strings.Contains(dataStr, "error") {
+		errMsg := dataStr[strings.Index(dataStr, "\"description\":\"")+15 : strings.Index(dataStr, "\"}}]")]
+		return errors.New(errMsg)
+	}
 
 	return nil
 }
