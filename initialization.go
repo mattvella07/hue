@@ -26,25 +26,21 @@ type hueDiscoveryResponse struct {
 const hueDiscoveryURL = "https://discovery.meethue.com/"
 
 func (h *Connection) initializeHue() error {
-	var err error
-
-	if h.internalIPAddress == "" {
-		err = h.getBridgeIPAddress()
-		if err != nil {
-			return fmt.Errorf("GetBridgeIPAddress Error: %s", err)
-		}
+	if h.isInitialized {
+		return nil
 	}
 
-	if h.UserID == "" {
-		err = h.getUserID()
-		if err != nil {
-			return fmt.Errorf("GetUserID Error: %s", err)
-		}
+	err := h.getBridgeIPAddress()
+	if err != nil {
+		return fmt.Errorf("GetBridgeIPAddress Error: %s", err)
 	}
 
-	if h.baseURL == "" {
-		h.getBaseURL()
+	err = h.getUserID()
+	if err != nil {
+		return fmt.Errorf("GetUserID Error: %s", err)
 	}
+
+	h.getBaseURL()
 
 	h.isInitialized = true
 
