@@ -102,6 +102,7 @@ func (h *Connection) GetAllLights() ([]Light, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -185,6 +186,7 @@ func (h *Connection) GetLight(light int) (Light, error) {
 	if err != nil {
 		return Light{}, err
 	}
+	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -218,6 +220,7 @@ func (h *Connection) GetNewLights() (NewLightResponse, error) {
 	if err != nil {
 		return NewLightResponse{}, err
 	}
+	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -284,32 +287,11 @@ func (h *Connection) FindNewLights() error {
 		return err
 	}
 
-	res, err := client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
-	defer res.Body.Close()
-	return nil
-}
-
-func (h *Connection) changeLightState(light int, state string) error {
-	err := h.initializeHue()
-	if err != nil {
-		return err
-	}
-
-	client := &http.Client{}
-	body := strings.NewReader(state)
-	req, err := http.NewRequest("PUT", fmt.Sprintf("%s/lights/%d/state", h.baseURL, light), body)
-	if err != nil {
-		return err
-	}
-
-	res, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
+	defer resp.Body.Close()
 
 	return nil
 }
@@ -392,13 +374,13 @@ func (h *Connection) RenameLight(light int, name string) error {
 		return err
 	}
 
-	res, err := client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
-	defer res.Body.Close()
+	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
@@ -426,13 +408,13 @@ func (h *Connection) DeleteLight(light int) error {
 		return err
 	}
 
-	res, err := client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
-	defer res.Body.Close()
+	defer resp.Body.Close()
 
-	_, err = ioutil.ReadAll(res.Body)
+	_, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
@@ -448,6 +430,28 @@ func (h *Connection) doesLightExist(light int) bool {
 	}
 
 	return true
+}
+
+func (h *Connection) changeLightState(light int, state string) error {
+	err := h.initializeHue()
+	if err != nil {
+		return err
+	}
+
+	client := &http.Client{}
+	body := strings.NewReader(state)
+	req, err := http.NewRequest("PUT", fmt.Sprintf("%s/lights/%d/state", h.baseURL, light), body)
+	if err != nil {
+		return err
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	return nil
 }
 
 func (h *Connection) validateColorParams(x, y float32, bri, hue, sat int) error {

@@ -51,6 +51,7 @@ func (h *Connection) GetAllGroups() ([]Group, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -63,7 +64,7 @@ func (h *Connection) GetAllGroups() ([]Group, error) {
 	allGroups := []Group{}
 	fullResponse = strings.Replace(fullResponse, "{", "", 1)
 
-	// Get starting light id
+	// Get starting group id
 	count := -1
 	if len(fullResponse) > 0 {
 		countStr := fullResponse[0:strings.Index(fullResponse, ":")]
@@ -74,6 +75,7 @@ func (h *Connection) GetAllGroups() ([]Group, error) {
 		}
 	}
 
+	// Format output
 	for count != -1 {
 		tmpArray := strings.Split(fullResponse, fmt.Sprintf("\"%d\":", count))
 
@@ -165,13 +167,13 @@ func (h *Connection) CreateGroup(name, groupType, class string, lights []int) er
 		return err
 	}
 
-	res, err := client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
-	defer res.Body.Close()
+	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
@@ -198,6 +200,7 @@ func (h *Connection) GetGroup(group int) (Group, error) {
 	if err != nil {
 		return Group{}, err
 	}
+	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -232,7 +235,7 @@ func (h *Connection) RenameGroup(group int, name string) error {
 
 	attributes := fmt.Sprintf("{ \"name\": \"%s\" }", name)
 
-	err := h.changeGroupAttributes(group, attributes)
+	err := h.updateGroup(group, "attributes", attributes)
 	if err != nil {
 		return err
 	}
@@ -253,7 +256,7 @@ func (h *Connection) SetLightsInGroup(group int, lights []int) error {
 
 	attributes := fmt.Sprintf("{ \"lights\": %s }", h.formatSlice(lights))
 
-	err := h.changeGroupAttributes(group, attributes)
+	err := h.updateGroup(group, "attributes", attributes)
 	if err != nil {
 		return err
 	}
@@ -274,7 +277,7 @@ func (h *Connection) SetGroupClass(group int, class string) error {
 
 	attributes := fmt.Sprintf("{ \"class\": \"%s\" }", class)
 
-	err := h.changeGroupAttributes(group, attributes)
+	err := h.updateGroup(group, "attributes", attributes)
 	if err != nil {
 		return err
 	}
@@ -292,7 +295,7 @@ func (h *Connection) TurnOnAllLightsInGroup(group int) error {
 
 	state := "{ \"on\": true }"
 
-	err := h.changeGroupState(group, state)
+	err := h.updateGroup(group, "state", state)
 	if err != nil {
 		return err
 	}
@@ -316,7 +319,7 @@ func (h *Connection) TurnOnAllLightsInGroupWithColor(group int, x, y float32, br
 
 	state := fmt.Sprintf("{\"on\": true, \"xy\": [%f, %f], \"bri\": %d, \"hue\": %d, \"sat\": %d}", x, y, bri, hue, sat)
 
-	err = h.changeGroupState(group, state)
+	err = h.updateGroup(group, "state", state)
 	if err != nil {
 		return err
 	}
@@ -333,7 +336,7 @@ func (h *Connection) TurnOffAllLightsInGroup(group int) error {
 
 	state := "{ \"on\": false }"
 
-	err := h.changeGroupState(group, state)
+	err := h.updateGroup(group, "state", state)
 	if err != nil {
 		return err
 	}
@@ -360,13 +363,13 @@ func (h *Connection) DeleteGroup(group int) error {
 		return err
 	}
 
-	res, err := client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
-	defer res.Body.Close()
+	defer resp.Body.Close()
 
-	_, err = ioutil.ReadAll(res.Body)
+	_, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
@@ -405,6 +408,51 @@ func (h *Connection) formatSlice(sli []int) string {
 	return str
 }
 
+func (h *Connection) updateGroup(group int, toUpdate, value string) error {
+	url := ""
+	switch toUpdate {
+	case "attributes":
+		url = fmt.Sprintf("%s/groups/%d", h.baseURL, group)
+	case "state":
+		url = fmt.Sprintf("%s/groups/%d/action", h.baseURL, group)
+	default:
+		return fmt.Errorf("Error while updating group %d", group)
+	}
+
+	err := h.initializeHue()
+	if err != nil {
+		return err
+	}
+
+	client := &http.Client{}
+	body := strings.NewReader(value)
+	req, err := http.NewRequest("PUT", url, body)
+	if err != nil {
+		return err
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	dataStr := string(data)
+
+	if strings.Contains(dataStr, "error") {
+		errMsg := dataStr[strings.Index(dataStr, "\"description\":\"")+15 : strings.Index(dataStr, "\"}}]")]
+		return errors.New(errMsg)
+	}
+
+	return nil
+}
+
+/*
 func (h *Connection) changeGroupAttributes(group int, attributes string) error {
 	err := h.initializeHue()
 	if err != nil {
@@ -472,3 +520,4 @@ func (h *Connection) changeGroupState(group int, state string) error {
 
 	return nil
 }
+*/

@@ -24,6 +24,10 @@ type groupTestData struct {
 	One Group `json:"1"`
 }
 
+type scheduleTestData struct {
+	One Schedule `json:"1"`
+}
+
 func createTestConnection(scenario int) (Connection, *httptest.Server) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.String() {
@@ -250,11 +254,44 @@ func createTestConnection(scenario int) (Connection, *httptest.Server) {
 			}
 		case "/groups/1/action":
 			w.Write([]byte("[{\"success\":{\"/groups/1/action\":\"Success\"}}]"))
+		case "/schedules":
+			if scenario == 1 {
+				// One schedule
+				data := scheduleTestData{
+					One: Schedule{
+						Name:        "Timer",
+						Description: "Simple timer",
+						Command: scheduleCommand{
+							Address: "/api/abc/groups/0/action",
+							Body: scheduleCommandBody{
+								Scene: "1234",
+							},
+							Method: "PUT",
+						},
+						Time:       "PT00:01:00",
+						Created:    "2018-12-10T13:39:16",
+						Status:     "enabled",
+						AutoDelete: false,
+						StartTime:  "2018-12-10T14:00:00",
+					},
+				}
+
+				returnData, err := json.Marshal(data)
+				if err != nil {
+					fmt.Println("ERR: ", err)
+				}
+
+				w.Write(returnData)
+			} else if scenario == 2 {
+				// No schedules
+				w.Write(nil)
+			}
 		}
 	}))
 	return Connection{
 		UserID:            "TEST",
 		internalIPAddress: "localhost",
 		baseURL:           server.URL,
+		isInitialized:     true,
 	}, server
 }
