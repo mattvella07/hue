@@ -261,9 +261,9 @@ func createTestConnection(scenario int) (Connection, *httptest.Server) {
 					One: Schedule{
 						Name:        "Timer",
 						Description: "Simple timer",
-						Command: scheduleCommand{
+						Command: ScheduleCommand{
 							Address: "/api/abc/groups/0/action",
-							Body: scheduleCommandBody{
+							Body: ScheduleCommandBody{
 								Scene: "1234",
 							},
 							Method: "PUT",
@@ -273,6 +273,7 @@ func createTestConnection(scenario int) (Connection, *httptest.Server) {
 						Status:     "enabled",
 						AutoDelete: false,
 						StartTime:  "2018-12-10T14:00:00",
+						ID:         1,
 					},
 				}
 

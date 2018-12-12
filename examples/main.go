@@ -101,4 +101,26 @@ func main() {
 	}
 
 	fmt.Println("Turned off all lights in group 1")
+
+	schedules, err := h.GetAllSchedules()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Println("Schedules")
+	fmt.Println(schedules)
+
+	cmd := hue.ScheduleCommand{
+		Address: "abc",
+		Body: hue.ScheduleCommandBody{
+			Scene: "123",
+		},
+		Method: "POST",
+	}
+	err = h.CreateSchedule("New Schedule", "Created by API", cmd, "localtime", "enabled", false, false)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Println("Schedule created")
 }

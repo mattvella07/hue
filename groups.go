@@ -181,7 +181,7 @@ func (h *Connection) CreateGroup(name, groupType, class string, lights []int) er
 	fullResponse := string(body)
 	fullResponse = strings.ToLower(fullResponse)
 
-	if !strings.Contains(fullResponse, "success") {
+	if strings.Contains(fullResponse, "error") {
 		errMsg := fullResponse[strings.Index(fullResponse, "description")+14 : strings.LastIndex(fullResponse, "\"")]
 		return fmt.Errorf("Unable to create group %s: %s", name, errMsg)
 	}
