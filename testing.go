@@ -316,6 +316,8 @@ func createTestConnection(scenario int) (Connection, *httptest.Server) {
 
 					w.Write(returnData)
 				}
+			} else if r.Method == "PUT" || r.Method == "DELETE" {
+				w.Write([]byte("[{\"success\":\"/schedules/1 deleted\"}]"))
 			}
 		}
 	}))

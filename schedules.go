@@ -219,6 +219,53 @@ func (h *Connection) GetSchedule(schedule int) (Schedule, error) {
 	return scheduleRes, nil
 }
 
+// 3.4 - Set Schedule Attributes
+
+// DeleteSchedule deletes the specified Phillips Hue schedule
+func (h *Connection) DeleteSchedule(schedule int) error {
+	// Error checking
+	if !h.doesScheduleExist(schedule) {
+		return fmt.Errorf("Schedule %d not found", schedule)
+	}
+
+	client := &http.Client{}
+	req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/schedules/%d", h.baseURL, schedule), nil)
+	if err != nil {
+		return err
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	dataStr := string(data)
+
+	// Check for error in response
+	if strings.Contains(dataStr, "error") {
+		errMsg := dataStr[strings.Index(dataStr, "\"description\":\"")+15 : strings.Index(dataStr, "\"}}]")]
+		return errors.New(errMsg)
+	}
+
+	return nil
+}
+
+func (h *Connection) doesScheduleExist(schedule int) bool {
+	// If GetSchedule returns an error, then the schedule doesn't exist
+	_, err := h.GetSchedule(schedule)
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+
 // formatStruct formats a struct as a JSON string
 func (h *Connection) formatStruct(data interface{}) string {
 	str := "{"

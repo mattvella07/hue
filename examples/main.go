@@ -131,4 +131,11 @@ func main() {
 
 	fmt.Println("Schedule 1")
 	fmt.Println(schedule)
+
+	// err = h.DeleteSchedule(6)
+	// if err != nil {
+	// 	log.Fatalln(err)
+	// }
+
+	// fmt.Println("Schedule 6 deleted")
 }

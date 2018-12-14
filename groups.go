@@ -369,9 +369,17 @@ func (h *Connection) DeleteGroup(group int) error {
 	}
 	defer resp.Body.Close()
 
-	_, err = ioutil.ReadAll(resp.Body)
+	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
+	}
+
+	dataStr := string(data)
+
+	// Check for error in response
+	if strings.Contains(dataStr, "error") {
+		errMsg := dataStr[strings.Index(dataStr, "\"description\":\"")+15 : strings.Index(dataStr, "\"}}]")]
+		return errors.New(errMsg)
 	}
 
 	return nil
