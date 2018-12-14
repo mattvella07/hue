@@ -123,4 +123,12 @@ func main() {
 	// }
 
 	// fmt.Println("Schedule created")
+
+	schedule, err := h.GetSchedule(1)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Println("Schedule 1")
+	fmt.Println(schedule)
 }

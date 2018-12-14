@@ -221,3 +221,53 @@ func TestCreateSchedule(t *testing.T) {
 		}
 	})
 }
+
+func TestGetSchedule(t *testing.T) {
+	t.Run("Schedule found", func(t *testing.T) {
+		h, server := createTestConnection(1)
+		defer server.Close()
+
+		schedule, err := h.GetSchedule(1)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		{
+			expected := "Timer"
+			if schedule.Name != expected {
+				t.Fatalf("Expected Name to equal %s, got %s", expected, schedule.Name)
+			}
+		}
+
+		{
+			expected := "Simple timer"
+			if schedule.Description != expected {
+				t.Fatalf("Expected Description to equal %s, got %s", expected, schedule.Description)
+			}
+		}
+
+		{
+			expected := "enabled"
+			if schedule.Status != expected {
+				t.Fatalf("Expected Status to equal %s, got %s", expected, schedule.Status)
+			}
+		}
+	})
+
+	t.Run("Schedule not found", func(t *testing.T) {
+		h, server := createTestConnection(2)
+		defer server.Close()
+
+		_, err := h.GetSchedule(2)
+		if err == nil {
+			t.Fatal("Expected an error, got nil")
+		}
+
+		{
+			expected := "Schedule not found"
+			if err.Error() != expected {
+				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
+			}
+		}
+	})
+}

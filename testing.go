@@ -287,6 +287,36 @@ func createTestConnection(scenario int) (Connection, *httptest.Server) {
 				// No schedules
 				w.Write(nil)
 			}
+		case "/schedules/1":
+			if r.Method == "GET" {
+				if scenario == 1 {
+					// One schedule
+					data := Schedule{
+						Name:        "Timer",
+						Description: "Simple timer",
+						Command: ScheduleCommand{
+							Address: "/api/abc/groups/0/action",
+							Body: ScheduleCommandBody{
+								Scene: "1234",
+							},
+							Method: "PUT",
+						},
+						Time:       "PT00:01:00",
+						Created:    "2018-12-10T13:39:16",
+						Status:     "enabled",
+						AutoDelete: false,
+						StartTime:  "2018-12-10T14:00:00",
+						ID:         1,
+					}
+
+					returnData, err := json.Marshal(data)
+					if err != nil {
+						fmt.Println("ERR: ", err)
+					}
+
+					w.Write(returnData)
+				}
+			}
 		}
 	}))
 	return Connection{

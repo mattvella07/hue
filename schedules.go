@@ -186,6 +186,39 @@ func (h *Connection) CreateSchedule(name, description string, command ScheduleCo
 	return nil
 }
 
+// GetSchedule gets the specified all Phillips Hue schedule by ID
+func (h *Connection) GetSchedule(schedule int) (Schedule, error) {
+	err := h.initializeHue()
+	if err != nil {
+		return Schedule{}, err
+	}
+
+	resp, err := http.Get(fmt.Sprintf("%s/schedules/%d", h.baseURL, schedule))
+	if err != nil {
+		return Schedule{}, err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return Schedule{}, err
+	}
+
+	// Schedule not found
+	if len(body) == 0 {
+		return Schedule{}, errors.New("Schedule not found")
+	}
+
+	scheduleRes := Schedule{}
+
+	err = json.Unmarshal(body, &scheduleRes)
+	if err != nil {
+		return Schedule{}, err
+	}
+
+	return scheduleRes, nil
+}
+
 // formatStruct formats a struct as a JSON string
 func (h *Connection) formatStruct(data interface{}) string {
 	str := "{"
