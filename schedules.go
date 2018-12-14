@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"reflect"
 	"strconv"
 	"strings"
 )
@@ -148,16 +149,15 @@ func (h *Connection) CreateSchedule(name, description string, command ScheduleCo
 		}
 	}
 
-	// Format command as JSON string
-
 	err := h.initializeHue()
 	if err != nil {
 		return err
 	}
 
 	client := &http.Client{}
-	reqBody := strings.NewReader(fmt.Sprintf("{\"name\": \"%s\", \"description\": \"%s\", \"command\": \"%s\", \"localtime\": \"%s\", \"status\": \"%s\", \"autodelete\": \"%t\", \"recycle\": \"%t\" }", name, description, command, localtime, status, autodelete, recycle))
+	reqBody := strings.NewReader(fmt.Sprintf("{\"name\": \"%s\", \"description\": \"%s\", \"command\": %s, \"localtime\": \"%s\", \"status\": \"%s\", \"autodelete\": \"%t\", \"recycle\": \"%t\" }", name, description, h.formatStruct(command), localtime, status, autodelete, recycle))
 
+	// ---REMOVE---
 	fmt.Println("REQ BODY")
 	fmt.Println(reqBody)
 
@@ -186,4 +186,29 @@ func (h *Connection) CreateSchedule(name, description string, command ScheduleCo
 	}
 
 	return nil
+}
+
+// formatStruct formats a struct as a JSON string
+func (h *Connection) formatStruct(data interface{}) string {
+	str := "{"
+	d := reflect.ValueOf(data)
+	t := d.Type()
+
+	for i := 0; i < d.NumField(); i++ {
+		str += fmt.Sprintf("\"%s\": ", strings.ToLower(t.Field(i).Name))
+
+		switch d.Field(i).Kind() {
+		case reflect.String:
+			str += fmt.Sprintf("\"%s\",", d.Field(i).Interface())
+		// Check for slice and array
+		case reflect.Struct:
+			str += fmt.Sprintf("%s,", h.formatStruct(d.Field(i).Interface()))
+		default:
+			str += fmt.Sprintf("%v,", d.Field(i).Interface())
+		}
+	}
+	str = str[:len(str)-1]
+	str += "}"
+
+	return str
 }

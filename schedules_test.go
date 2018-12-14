@@ -67,3 +67,23 @@ func TestGetAllSchedules(t *testing.T) {
 		}
 	})
 }
+
+func TestCreateSchedule(t *testing.T) {
+	h, server := createTestConnection(1)
+	defer server.Close()
+
+	t.Run("Successful schedule creation", func(t *testing.T) {
+		cmd := ScheduleCommand{
+			Address: "abc",
+			Body: ScheduleCommandBody{
+				Scene: "123",
+			},
+			Method: "PUT",
+		}
+
+		err := h.CreateSchedule("new schedule", "a new schedule", cmd, "2018-01-01", "enabled", true, true)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+}
