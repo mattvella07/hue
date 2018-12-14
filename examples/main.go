@@ -110,17 +110,17 @@ func main() {
 	fmt.Println("Schedules")
 	fmt.Println(schedules)
 
-	cmd := hue.ScheduleCommand{
-		Address: "abc",
-		Body: hue.ScheduleCommandBody{
-			Scene: "123",
-		},
-		Method: "POST",
-	}
-	err = h.CreateSchedule("New Schedule", "Created by API", cmd, "localtime", "enabled", false, false)
-	if err != nil {
-		log.Fatalln(err)
-	}
+	// cmd := hue.ScheduleCommand{
+	// 	Address: "abc",
+	// 	Body: hue.ScheduleCommandBody{
+	// 		Scene: "123",
+	// 	},
+	// 	Method: "POST",
+	// }
+	// err = h.CreateSchedule("New Schedule", "Created by API", cmd, "2018-12-29T22:30:40", "enabled", false, false)
+	// if err != nil {
+	// 	log.Fatalln(err)
+	// }
 
-	fmt.Println("Schedule created")
+	// fmt.Println("Schedule created")
 }

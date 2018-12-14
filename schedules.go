@@ -13,6 +13,8 @@ import (
 
 type ScheduleCommandBody struct {
 	Scene string `json:"scene"`
+	Flag  bool   `json:"flag"`
+	On    bool   `json:"on"`
 }
 
 type ScheduleCommand struct {
@@ -155,11 +157,7 @@ func (h *Connection) CreateSchedule(name, description string, command ScheduleCo
 	}
 
 	client := &http.Client{}
-	reqBody := strings.NewReader(fmt.Sprintf("{\"name\": \"%s\", \"description\": \"%s\", \"command\": %s, \"localtime\": \"%s\", \"status\": \"%s\", \"autodelete\": \"%t\", \"recycle\": \"%t\" }", name, description, h.formatStruct(command), localtime, status, autodelete, recycle))
-
-	// ---REMOVE---
-	fmt.Println("REQ BODY")
-	fmt.Println(reqBody)
+	reqBody := strings.NewReader(fmt.Sprintf("{\"name\": \"%s\", \"description\": \"%s\", \"command\": %s, \"localtime\": \"%s\", \"status\": \"%s\", \"autodelete\": %t, \"recycle\": %t }", name, description, h.formatStruct(command), localtime, status, autodelete, recycle))
 
 	req, err := http.NewRequest("POST", fmt.Sprintf("%s/schedules", h.baseURL), reqBody)
 	if err != nil {

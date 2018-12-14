@@ -86,4 +86,138 @@ func TestCreateSchedule(t *testing.T) {
 			t.Fatal(err)
 		}
 	})
+
+	t.Run("Successful schedule creation - empty name", func(t *testing.T) {
+		cmd := ScheduleCommand{
+			Address: "abc",
+			Body: ScheduleCommandBody{
+				Scene: "123",
+			},
+			Method: "PUT",
+		}
+
+		err := h.CreateSchedule("", "a new schedule", cmd, "2018-01-01", "enabled", true, true)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("Successful schedule creation - empty description", func(t *testing.T) {
+		cmd := ScheduleCommand{
+			Address: "abc",
+			Body: ScheduleCommandBody{
+				Scene: "123",
+			},
+			Method: "PUT",
+		}
+
+		err := h.CreateSchedule("new schedule", "", cmd, "2018-01-01", "enabled", true, true)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("Invalid command address", func(t *testing.T) {
+		cmd := ScheduleCommand{}
+
+		err := h.CreateSchedule("new schedule", "a new schedule", cmd, "2018-01-01", "enabled", true, true)
+		if err == nil {
+			t.Fatal("Expected an error, got nil")
+		}
+
+		{
+			expected := "Command Address must not be empty"
+			if err.Error() != expected {
+				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
+			}
+		}
+	})
+
+	t.Run("Invalid command method", func(t *testing.T) {
+		cmd := ScheduleCommand{
+			Address: "abc",
+			Body: ScheduleCommandBody{
+				Scene: "123",
+			},
+			Method: "GET",
+		}
+
+		err := h.CreateSchedule("new schedule", "a new schedule", cmd, "2018-01-01", "enabled", true, true)
+		if err == nil {
+			t.Fatal("Expected an error, got nil")
+		}
+
+		{
+			expected := "Command Method must be either POST, PUT, or DELETE"
+			if err.Error() != expected {
+				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
+			}
+		}
+	})
+
+	t.Run("Invalid command body", func(t *testing.T) {
+		cmd := ScheduleCommand{
+			Address: "abc",
+			Body: ScheduleCommandBody{
+				Scene: "",
+			},
+			Method: "PUT",
+		}
+
+		err := h.CreateSchedule("new schedule", "a new schedule", cmd, "2018-01-01", "enabled", true, true)
+		if err == nil {
+			t.Fatal("Expected an error, got nil")
+		}
+
+		{
+			expected := "Command Body must not be empty"
+			if err.Error() != expected {
+				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
+			}
+		}
+	})
+
+	t.Run("Invalid localtime", func(t *testing.T) {
+		cmd := ScheduleCommand{
+			Address: "abc",
+			Body: ScheduleCommandBody{
+				Scene: "123",
+			},
+			Method: "PUT",
+		}
+
+		err := h.CreateSchedule("new schedule", "description", cmd, "", "enabled", true, true)
+		if err == nil {
+			t.Fatal("Expected an error, got nil")
+		}
+
+		{
+			expected := "Localtime must not be empty"
+			if err.Error() != expected {
+				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
+			}
+		}
+	})
+
+	t.Run("Invalid status", func(t *testing.T) {
+		cmd := ScheduleCommand{
+			Address: "abc",
+			Body: ScheduleCommandBody{
+				Scene: "123",
+			},
+			Method: "PUT",
+		}
+
+		err := h.CreateSchedule("new schedule", "description", cmd, "2018-01-01", "invalid", true, true)
+		if err == nil {
+			t.Fatal("Expected an error, got nil")
+		}
+
+		{
+			expected := "Status must be either enabled or disabled"
+			if err.Error() != expected {
+				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
+			}
+		}
+	})
 }
