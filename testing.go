@@ -321,6 +321,101 @@ func createTestConnection(scenario int) (Connection, *httptest.Server) {
 			}
 		}
 	}))
+
+	/*server := httptest.NewServer(http.HandlerFunc(func(w ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case "GET":
+			switch r.URL.String() {
+			case "/lights":
+				if scenario == 1 {
+					// One light
+					data := lightTestData{
+						One: Light{
+							State: lightState{
+								On:        false,
+								Bri:       100,
+								Hue:       200,
+								Sat:       300,
+								Effect:    "",
+								XY:        []float32{0.45},
+								CT:        400,
+								Alert:     "",
+								ColorMode: "",
+								Mode:      "",
+								Reachable: true,
+							},
+							SWUpdate: lightSWUpdate{
+								State:       "noupdates",
+								LastInstall: "2018-06-04T6:14:11",
+							},
+							Type:             "Extended color",
+							Name:             "Hue color lamp 1",
+							ModelID:          "LCT016",
+							ManufacturerName: "Phillips",
+							ProductName:      "Hue color lamp",
+							Capabilities: lightCapabilities{
+								Certified: true,
+								Control: lightCapabilitiesControl{
+									MindimLevel:    1000,
+									MaxLumen:       800,
+									ColorGamutType: "C",
+									ColorGamut:     [][]float32{[]float32{0.2, 0.3}, []float32{0.4, 0.5}},
+									CT: lightCapabilitiesCT{
+										Min: 153,
+										Max: 500,
+									},
+								},
+								Streaming: lightCapabilitiesStreaming{
+									Renderer: true,
+									Proxy:    true,
+								},
+							},
+							Config: lightConfig{
+								ArcheType: "sultanbulb",
+								Function:  "mixed",
+								Direction: "omnidirectional",
+							},
+							UniqueID:   "ab:cd:ef",
+							SWVersion:  "1.29",
+							SWConfigID: "ABCD",
+							ProductID:  "Phillips-LCT016",
+						},
+					}
+
+					returnData, err := json.Marshal(data)
+					if err != nil {
+						fmt.Println("ERR: ", err)
+					}
+
+					w.Write(returnData)
+				} else if scenario == 2 {
+					// No lights
+					w.Write(nil)
+				}
+			case "/lights/1", "/lights/2":
+				// Something
+			case "/lights/new":
+				// Something
+			case "/groups":
+				// Something
+			case "/groups/1":
+				// Something
+			case "/schedules":
+				// Something
+			case "/schedules/1":
+				// Something
+			}
+		case "PUT", "POST", "DELETE":
+			if scenario == 1 {
+				// Successful PUT, POST, or DELETE
+				w.Write([]byte(fmt.Sprintf("[{\"success\":\"%s %s\"}]", r.Method, r.URL.String())))
+			} else if scenario == 2 {
+				// Error returned from PUT, POST, or DELETE
+				w.Write([]byte(fmt.Sprintf("[{\"error\": {\"description\": \"Error while performing %s on %s\"}}]", r.Method, r.URL.String())))
+			}
+		}
+	}))*/
+
 	return Connection{
 		UserID:            "TEST",
 		internalIPAddress: "localhost",
