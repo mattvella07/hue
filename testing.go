@@ -28,6 +28,10 @@ type scheduleTestData struct {
 	One Schedule `json:"1"`
 }
 
+type sceneTestData struct {
+	One Scene `json:"1"`
+}
+
 func createTestConnection(scenario int) (Connection, *httptest.Server) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
@@ -245,7 +249,6 @@ func generateTestData(url string) interface{} {
 				Status:     "enabled",
 				AutoDelete: false,
 				StartTime:  "2018-12-10T14:00:00",
-				ID:         1,
 			},
 		}
 
@@ -266,7 +269,28 @@ func generateTestData(url string) interface{} {
 			Status:     "enabled",
 			AutoDelete: false,
 			StartTime:  "2018-12-10T14:00:00",
-			ID:         1,
+		}
+
+		return data
+
+	case "/scenes":
+		data := sceneTestData{
+			One: Scene{
+				Name:    "Night time",
+				Type:    "LightScene",
+				Group:   "1",
+				Lights:  []string{"1", "2"},
+				Owner:   "abcd",
+				Recycle: true,
+				Locked:  false,
+				AppData: sceneAppData{
+					Version: 1,
+					Data:    "myAppData",
+				},
+				Picture:     "",
+				LastUpdated: "2018-12-21T12:00:00",
+				Version:     1,
+			},
 		}
 
 		return data

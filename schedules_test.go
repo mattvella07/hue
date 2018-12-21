@@ -272,6 +272,145 @@ func TestGetSchedule(t *testing.T) {
 	})
 }
 
+func TestRenameSchedule(t *testing.T) {
+	h, server := createTestConnection(1)
+	defer server.Close()
+
+	t.Run("Successful rename", func(t *testing.T) {
+		err := h.RenameSchedule(1, "Schedule Renamed")
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("Schedule doesn't exist", func(t *testing.T) {
+		err := h.RenameSchedule(3, "Schedule Renamed")
+		if err == nil {
+			t.Fatal("Expected an error, got nil")
+		}
+
+		{
+			expected := "Schedule 3 not found"
+			if err.Error() != expected {
+				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
+			}
+		}
+	})
+
+	t.Run("Invalid name", func(t *testing.T) {
+		err := h.RenameSchedule(1, "")
+		if err == nil {
+			t.Fatal("Expected an error, got nil")
+		}
+
+		{
+			expected := "Name must not be empty"
+			if err.Error() != expected {
+				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
+			}
+		}
+	})
+}
+
+func TestSetScheduleDescription(t *testing.T) {
+	h, server := createTestConnection(1)
+	defer server.Close()
+
+	t.Run("Successful update", func(t *testing.T) {
+		err := h.SetScheduleDescription(1, "New description")
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("Schedule doesn't exist", func(t *testing.T) {
+		err := h.SetScheduleDescription(3, "New description")
+		if err == nil {
+			t.Fatal("Expected an error, got nil")
+		}
+
+		{
+			expected := "Schedule 3 not found"
+			if err.Error() != expected {
+				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
+			}
+		}
+	})
+}
+
+func TestSetScheduleStatus(t *testing.T) {
+	h, server := createTestConnection(1)
+	defer server.Close()
+
+	t.Run("Successful update", func(t *testing.T) {
+		err := h.SetScheduleStatus(1, "enabled")
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("Successful update 2", func(t *testing.T) {
+		err := h.SetScheduleStatus(1, "disabled")
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("Schedule doesn't exist", func(t *testing.T) {
+		err := h.SetScheduleStatus(3, "enabled")
+		if err == nil {
+			t.Fatal("Expected an error, got nil")
+		}
+
+		{
+			expected := "Schedule 3 not found"
+			if err.Error() != expected {
+				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
+			}
+		}
+	})
+
+	t.Run("Invalid status", func(t *testing.T) {
+		err := h.SetScheduleStatus(1, "invalid")
+		if err == nil {
+			t.Fatal("Expected an error, got nil")
+		}
+
+		{
+			expected := "Status must be one of the following: enabled, disabled"
+			if err.Error() != expected {
+				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
+			}
+		}
+	})
+}
+
+func TestSetScheduleAutoDelete(t *testing.T) {
+	h, server := createTestConnection(1)
+	defer server.Close()
+
+	t.Run("Successful update", func(t *testing.T) {
+		err := h.SetScheduleAutoDelete(1, true)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("Schedule doesn't exist", func(t *testing.T) {
+		err := h.SetScheduleAutoDelete(3, true)
+		if err == nil {
+			t.Fatal("Expected an error, got nil")
+		}
+
+		{
+			expected := "Schedule 3 not found"
+			if err.Error() != expected {
+				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
+			}
+		}
+	})
+}
+
 func TestDeleteSchedule(t *testing.T) {
 	h, server := createTestConnection(1)
 	defer server.Close()

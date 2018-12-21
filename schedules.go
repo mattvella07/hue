@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"reflect"
 	"strconv"
 	"strings"
 )
@@ -219,7 +218,81 @@ func (h *Connection) GetSchedule(schedule int) (Schedule, error) {
 	return scheduleRes, nil
 }
 
-// 3.4 - Set Schedule Attributes
+// RenameSchedule renames the specified Phillips Hue schedule
+func (h *Connection) RenameSchedule(schedule int, name string) error {
+	// Error checking
+	if !h.doesScheduleExist(schedule) {
+		return fmt.Errorf("Schedule %d not found", schedule)
+	}
+
+	if strings.Trim(name, " ") == "" {
+		return errors.New("Name must not be empty")
+	}
+
+	attributes := fmt.Sprintf("{ \"name\": \"%s\" }", name)
+
+	err := h.updateSchedule(schedule, attributes)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// SetScheduleDescription sets the description for the specified Phillips Hue schedule
+func (h *Connection) SetScheduleDescription(schedule int, description string) error {
+	// Error checking
+	if !h.doesScheduleExist(schedule) {
+		return fmt.Errorf("Schedule %d not found", schedule)
+	}
+
+	attributes := fmt.Sprintf("{ \"description\": \"%s\" }", description)
+
+	err := h.updateSchedule(schedule, attributes)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// SetScheduleStatus sets the status for the specified Phillips Hue schedule
+func (h *Connection) SetScheduleStatus(schedule int, status string) error {
+	// Error checking
+	if !h.doesScheduleExist(schedule) {
+		return fmt.Errorf("Schedule %d not found", schedule)
+	}
+
+	if strings.Trim(status, " ") != "enabled" && strings.Trim(status, " ") != "disabled" {
+		return errors.New("Status must be one of the following: enabled, disabled")
+	}
+
+	attributes := fmt.Sprintf("{ \"status\": \"%s\" }", status)
+
+	err := h.updateSchedule(schedule, attributes)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// SetScheduleAutoDelete sets the autodelete property for the specified Phillips Hue schedule
+func (h *Connection) SetScheduleAutoDelete(schedule int, autodelete bool) error {
+	// Error checking
+	if !h.doesScheduleExist(schedule) {
+		return fmt.Errorf("Schedule %d not found", schedule)
+	}
+
+	attributes := fmt.Sprintf("{ \"autodelete\": %v }", autodelete)
+
+	err := h.updateSchedule(schedule, attributes)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 
 // DeleteSchedule deletes the specified Phillips Hue schedule
 func (h *Connection) DeleteSchedule(schedule int) error {
@@ -266,27 +339,36 @@ func (h *Connection) doesScheduleExist(schedule int) bool {
 	return true
 }
 
-// formatStruct formats a struct as a JSON string
-func (h *Connection) formatStruct(data interface{}) string {
-	str := "{"
-	d := reflect.ValueOf(data)
-	t := d.Type()
-
-	for i := 0; i < d.NumField(); i++ {
-		str += fmt.Sprintf("\"%s\": ", strings.ToLower(t.Field(i).Name))
-
-		switch d.Field(i).Kind() {
-		case reflect.String:
-			str += fmt.Sprintf("\"%s\",", d.Field(i).Interface())
-		// Check for slice and array
-		case reflect.Struct:
-			str += fmt.Sprintf("%s,", h.formatStruct(d.Field(i).Interface()))
-		default:
-			str += fmt.Sprintf("%v,", d.Field(i).Interface())
-		}
+func (h *Connection) updateSchedule(schedule int, attributes string) error {
+	err := h.initializeHue()
+	if err != nil {
+		return err
 	}
-	str = str[:len(str)-1]
-	str += "}"
 
-	return str
+	client := &http.Client{}
+	body := strings.NewReader(attributes)
+	req, err := http.NewRequest("PUT", fmt.Sprintf("%s/schedules/%d", h.baseURL, schedule), body)
+	if err != nil {
+		return err
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	dataStr := string(data)
+
+	if strings.Contains(dataStr, "error") {
+		errMsg := dataStr[strings.Index(dataStr, "\"description\":\"")+15 : strings.Index(dataStr, "\"}}]")]
+		return errors.New(errMsg)
+	}
+
+	return nil
 }

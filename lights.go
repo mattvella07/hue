@@ -432,6 +432,16 @@ func (h *Connection) doesLightExist(light int) bool {
 	return true
 }
 
+func (h *Connection) allLightsValid(lights []int) bool {
+	for _, light := range lights {
+		if !h.doesLightExist(light) {
+			return false
+		}
+	}
+
+	return true
+}
+
 func (h *Connection) changeLightState(light int, state string) error {
 	err := h.initializeHue()
 	if err != nil {

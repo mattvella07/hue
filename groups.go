@@ -395,27 +395,6 @@ func (h *Connection) doesGroupExist(group int) bool {
 	return true
 }
 
-func (h *Connection) allLightsValid(lights []int) bool {
-	for _, light := range lights {
-		if !h.doesLightExist(light) {
-			return false
-		}
-	}
-
-	return true
-}
-
-func (h *Connection) formatSlice(sli []int) string {
-	str := "["
-	for _, s := range sli {
-		str += fmt.Sprintf("\"%d\",", s)
-	}
-	str = str[:len(str)-1]
-	str += "]"
-
-	return str
-}
-
 func (h *Connection) updateGroup(group int, toUpdate, value string) error {
 	url := ""
 	switch toUpdate {
