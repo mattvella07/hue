@@ -71,7 +71,11 @@ func (h *Connection) GetAllScenes() ([]Scene, error) {
 			return nil, err
 		}
 
-		json.Unmarshal(s, &scene)
+		err = json.Unmarshal(s, &scene)
+		if err != nil {
+			return nil, err
+		}
+
 		scene.ID = key
 
 		allScenes = append(allScenes, scene)

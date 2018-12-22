@@ -10,12 +10,16 @@ import (
 	"strings"
 )
 
+// ScheduleCommandBody contains the data for the Body field in
+//  the ScheduleCommand type
 type ScheduleCommandBody struct {
 	Scene string `json:"scene"`
 	Flag  bool   `json:"flag"`
 	On    bool   `json:"on"`
 }
 
+// ScheduleCommand contains the data for the Command field in the
+// Schedule type
 type ScheduleCommand struct {
 	Address string              `json:"address"`
 	Body    ScheduleCommandBody `json:"body"`
@@ -54,68 +58,43 @@ func (h *Connection) GetAllSchedules() ([]Schedule, error) {
 		return nil, err
 	}
 
-	fullResponse := string(body)
+	if len(body) == 0 {
+		return []Schedule{}, nil
+	}
 
-	schedule := Schedule{}
+	// Create map to store JSON response
+	fullResponse := make(map[string]interface{})
+
+	err = json.Unmarshal(body, &fullResponse)
+	if err != nil {
+		return nil, err
+	}
+
 	allSchedules := []Schedule{}
-	fullResponse = strings.Replace(fullResponse, "{", "", 1)
 
-	// Get starting schedule id
-	count := -1
-	if len(fullResponse) > 0 {
-		countStr := fullResponse[0:strings.Index(fullResponse, ":")]
-		countStr = strings.Replace(countStr, "\"", "", -1)
-		count, err = strconv.Atoi(countStr)
+	// Loop through all keys in the map and Unmarshal into
+	// Schedule type
+	for key, val := range fullResponse {
+		schedule := Schedule{}
+
+		s, err := json.Marshal(val)
 		if err != nil {
 			return nil, err
 		}
-	}
 
-	// Format output
-	for count != -1 {
-		tmpArray := strings.Split(fullResponse, fmt.Sprintf("\"%d\":", count))
-
-		if len(tmpArray) <= 1 {
-			if len(tmpArray) > 0 {
-				if tmpArray[0] != "" {
-					//Remove leading or trailing commas
-					tmpArray[0] = strings.Trim(tmpArray[0], ",")
-
-					//If sting ends in two curly braces remove one
-					if strings.LastIndex(tmpArray[0], "}}") == len(tmpArray[0])-2 {
-						tmpArray[0] = tmpArray[0][0 : len(tmpArray[0])-1]
-					}
-
-					err = json.Unmarshal([]byte(tmpArray[0]), &schedule)
-					if err != nil {
-						return nil, err
-					}
-
-					schedule.ID = count - 1
-
-					allSchedules = append(allSchedules, schedule)
-				}
-			}
-			count = -1
-		} else {
-			if tmpArray[0] != "" {
-				// Remove leading or trailing commas
-				tmpArray[0] = strings.Trim(tmpArray[0], ",")
-
-				err = json.Unmarshal([]byte(tmpArray[0]), &schedule)
-				if err != nil {
-					return nil, err
-				}
-
-				schedule.ID = count - 1
-
-				allSchedules = append(allSchedules, schedule)
-			}
-
-			fullResponse = strings.Replace(fullResponse, fmt.Sprintf("\"%d\":", count), "", 1)
-			fullResponse = strings.Replace(fullResponse, tmpArray[0], "", 1)
-			count++
+		err = json.Unmarshal(s, &schedule)
+		if err != nil {
+			return nil, err
 		}
+
+		id, err := strconv.Atoi(key)
+		if err != nil {
+			return nil, err
+		}
+
+		schedule.ID = id
+
+		allSchedules = append(allSchedules, schedule)
 	}
 
 	return allSchedules, nil
