@@ -12,6 +12,8 @@ type sceneAppData struct {
 	Data    string `json:"data"`
 }
 
+// Scene contains all data returned from the Phillips Hue API
+// for an individual Phillips Hue scene
 type Scene struct {
 	Name        string       `json:"name"`
 	Type        string       `json:"type"`
@@ -49,6 +51,7 @@ func (h *Connection) GetAllScenes() ([]Scene, error) {
 		return []Scene{}, nil
 	}
 
+	// Create map to store JSON response
 	fullResponse := make(map[string]interface{})
 
 	err = json.Unmarshal(body, &fullResponse)
@@ -57,6 +60,9 @@ func (h *Connection) GetAllScenes() ([]Scene, error) {
 	}
 
 	allScenes := []Scene{}
+
+	// Loop through all keys in the map and Unmarshal into
+	// Scene type
 	for key, val := range fullResponse {
 		scene := Scene{}
 
