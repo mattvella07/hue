@@ -58,68 +58,43 @@ func (h *Connection) GetAllGroups() ([]Group, error) {
 		return nil, err
 	}
 
-	fullResponse := string(body)
+	if len(body) == 0 {
+		return []Group{}, nil
+	}
 
-	group := Group{}
+	// Create map to store JSON response
+	fullResponse := make(map[string]interface{})
+
+	err = json.Unmarshal(body, &fullResponse)
+	if err != nil {
+		return nil, err
+	}
+
 	allGroups := []Group{}
-	fullResponse = strings.Replace(fullResponse, "{", "", 1)
 
-	// Get starting group id
-	count := -1
-	if len(fullResponse) > 0 {
-		countStr := fullResponse[0:strings.Index(fullResponse, ":")]
-		countStr = strings.Replace(countStr, "\"", "", -1)
-		count, err = strconv.Atoi(countStr)
+	// Loop through all keys in the map and Unmarshal into
+	// Group type
+	for key, val := range fullResponse {
+		group := Group{}
+
+		g, err := json.Marshal(val)
 		if err != nil {
 			return nil, err
 		}
-	}
 
-	// Format output
-	for count != -1 {
-		tmpArray := strings.Split(fullResponse, fmt.Sprintf("\"%d\":", count))
-
-		if len(tmpArray) <= 1 {
-			if len(tmpArray) > 0 {
-				if tmpArray[0] != "" {
-					//Remove leading or trailing commas
-					tmpArray[0] = strings.Trim(tmpArray[0], ",")
-
-					//If sting ends in two curly braces remove one
-					if strings.LastIndex(tmpArray[0], "}}") == len(tmpArray[0])-2 {
-						tmpArray[0] = tmpArray[0][0 : len(tmpArray[0])-1]
-					}
-
-					err = json.Unmarshal([]byte(tmpArray[0]), &group)
-					if err != nil {
-						return nil, err
-					}
-
-					group.ID = count - 1
-
-					allGroups = append(allGroups, group)
-				}
-			}
-			count = -1
-		} else {
-			if tmpArray[0] != "" {
-				// Remove leading or trailing commas
-				tmpArray[0] = strings.Trim(tmpArray[0], ",")
-
-				err = json.Unmarshal([]byte(tmpArray[0]), &group)
-				if err != nil {
-					return nil, err
-				}
-
-				group.ID = count - 1
-
-				allGroups = append(allGroups, group)
-			}
-
-			fullResponse = strings.Replace(fullResponse, fmt.Sprintf("\"%d\":", count), "", 1)
-			fullResponse = strings.Replace(fullResponse, tmpArray[0], "", 1)
-			count++
+		err = json.Unmarshal(g, &group)
+		if err != nil {
+			return nil, err
 		}
+
+		id, err := strconv.Atoi(key)
+		if err != nil {
+			return nil, err
+		}
+
+		group.ID = id
+
+		allGroups = append(allGroups, group)
 	}
 
 	return allGroups, nil

@@ -109,67 +109,43 @@ func (h *Connection) GetAllLights() ([]Light, error) {
 		return nil, err
 	}
 
-	fullResponse := string(body)
+	if len(body) == 0 {
+		return []Light{}, nil
+	}
 
-	light := Light{}
+	// Create map to store JSON response
+	fullResponse := make(map[string]interface{})
+
+	err = json.Unmarshal(body, &fullResponse)
+	if err != nil {
+		return nil, err
+	}
+
 	allLights := []Light{}
-	fullResponse = strings.Replace(fullResponse, "{", "", 1)
 
-	// Get starting light id
-	count := -1
-	if len(fullResponse) > 0 {
-		countStr := fullResponse[0:strings.Index(fullResponse, ":")]
-		countStr = strings.Replace(countStr, "\"", "", -1)
-		count, err = strconv.Atoi(countStr)
+	// Loop through all keys in the map and Unmarshal into
+	// Group type
+	for key, val := range fullResponse {
+		light := Light{}
+
+		l, err := json.Marshal(val)
 		if err != nil {
 			return nil, err
 		}
-	}
 
-	for count != -1 {
-		tmpArray := strings.Split(fullResponse, fmt.Sprintf("\"%d\":", count))
-
-		if len(tmpArray) <= 1 {
-			if len(tmpArray) > 0 {
-				if tmpArray[0] != "" {
-					// Remove leading or trailing commas
-					tmpArray[0] = strings.Trim(tmpArray[0], ",")
-
-					// If sting ends in two curly braces remove one
-					if strings.LastIndex(tmpArray[0], "}}") == len(tmpArray[0])-2 {
-						tmpArray[0] = tmpArray[0][0 : len(tmpArray[0])-1]
-					}
-
-					err = json.Unmarshal([]byte(tmpArray[0]), &light)
-					if err != nil {
-						return nil, err
-					}
-
-					light.ID = count - 1
-
-					allLights = append(allLights, light)
-				}
-			}
-			count = -1
-		} else {
-			if tmpArray[0] != "" {
-				// Remove leading or trailing commas
-				tmpArray[0] = strings.Trim(tmpArray[0], ",")
-
-				err = json.Unmarshal([]byte(tmpArray[0]), &light)
-				if err != nil {
-					return nil, err
-				}
-
-				light.ID = count - 1
-
-				allLights = append(allLights, light)
-			}
-
-			fullResponse = strings.Replace(fullResponse, fmt.Sprintf("\"%d\":", count), "", 1)
-			fullResponse = strings.Replace(fullResponse, tmpArray[0], "", 1)
-			count++
+		err = json.Unmarshal(l, &light)
+		if err != nil {
+			return nil, err
 		}
+
+		id, err := strconv.Atoi(key)
+		if err != nil {
+			return nil, err
+		}
+
+		light.ID = id
+
+		allLights = append(allLights, light)
 	}
 
 	return allLights, nil
