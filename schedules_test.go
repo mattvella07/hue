@@ -385,32 +385,6 @@ func TestSetScheduleStatus(t *testing.T) {
 	})
 }
 
-func TestSetScheduleAutoDelete(t *testing.T) {
-	h, server := createTestConnection(1)
-	defer server.Close()
-
-	t.Run("Successful update", func(t *testing.T) {
-		err := h.SetScheduleAutoDelete(1, true)
-		if err != nil {
-			t.Fatal(err)
-		}
-	})
-
-	t.Run("Schedule doesn't exist", func(t *testing.T) {
-		err := h.SetScheduleAutoDelete(3, true)
-		if err == nil {
-			t.Fatal("Expected an error, got nil")
-		}
-
-		{
-			expected := "Schedule 3 not found"
-			if err.Error() != expected {
-				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
-			}
-		}
-	})
-}
-
 func TestDeleteSchedule(t *testing.T) {
 	h, server := createTestConnection(1)
 	defer server.Close()

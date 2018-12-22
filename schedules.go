@@ -277,23 +277,6 @@ func (h *Connection) SetScheduleStatus(schedule int, status string) error {
 	return nil
 }
 
-// SetScheduleAutoDelete sets the autodelete property for the specified Phillips Hue schedule
-func (h *Connection) SetScheduleAutoDelete(schedule int, autodelete bool) error {
-	// Error checking
-	if !h.doesScheduleExist(schedule) {
-		return fmt.Errorf("Schedule %d not found", schedule)
-	}
-
-	attributes := fmt.Sprintf("{ \"autodelete\": %v }", autodelete)
-
-	err := h.updateSchedule(schedule, attributes)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 // DeleteSchedule deletes the specified Phillips Hue schedule
 func (h *Connection) DeleteSchedule(schedule int) error {
 	// Error checking

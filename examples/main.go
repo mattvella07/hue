@@ -131,6 +131,7 @@ func main() {
 
 	fmt.Println("Schedule 1")
 	fmt.Println(schedule)
+	fmt.Println(schedule.AutoDelete)
 
 	// err = h.DeleteSchedule(6)
 	// if err != nil {
@@ -138,4 +139,17 @@ func main() {
 	// }
 
 	// fmt.Println("Schedule 6 deleted")
+
+	// scenes, err := h.GetAllScenes()
+	// if err != nil {
+	// 	log.Fatalln(err)
+	// }
+
+	// fmt.Println("SCENES")
+	// fmt.Println(len(scenes))
+	// for _, s := range scenes {
+	// 	fmt.Println(s.ID)
+	// }
+
+	// fmt.Println(scenes)
 }
