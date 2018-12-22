@@ -151,39 +151,6 @@ func (h *Connection) GetAllLights() ([]Light, error) {
 	return allLights, nil
 }
 
-// GetLight gets the specified Phillips Hue light
-func (h *Connection) GetLight(light int) (Light, error) {
-	err := h.initializeHue()
-	if err != nil {
-		return Light{}, err
-	}
-
-	resp, err := http.Get(fmt.Sprintf("%s/lights/%d", h.baseURL, light))
-	if err != nil {
-		return Light{}, err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return Light{}, err
-	}
-
-	// Light not found
-	if len(body) == 0 {
-		return Light{}, errors.New("Light not found")
-	}
-
-	lightRes := Light{}
-
-	err = json.Unmarshal(body, &lightRes)
-	if err != nil {
-		return Light{}, err
-	}
-
-	return lightRes, nil
-}
-
 // GetNewLights gets Phillips Hue lights that were discovered the last time
 // FindNewLights was called
 func (h *Connection) GetNewLights() (NewLightResponse, error) {
@@ -272,6 +239,78 @@ func (h *Connection) FindNewLights() error {
 	return nil
 }
 
+// GetLight gets the specified Phillips Hue light
+func (h *Connection) GetLight(light int) (Light, error) {
+	err := h.initializeHue()
+	if err != nil {
+		return Light{}, err
+	}
+
+	resp, err := http.Get(fmt.Sprintf("%s/lights/%d", h.baseURL, light))
+	if err != nil {
+		return Light{}, err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return Light{}, err
+	}
+
+	// Light not found
+	if len(body) == 0 {
+		return Light{}, errors.New("Light not found")
+	}
+
+	lightRes := Light{}
+
+	err = json.Unmarshal(body, &lightRes)
+	if err != nil {
+		return Light{}, err
+	}
+
+	return lightRes, nil
+}
+
+// RenameLight renames the specified Phillips Hue light
+func (h *Connection) RenameLight(light int, name string) error {
+	// Error checking
+	if !h.doesLightExist(light) {
+		return fmt.Errorf("Light %d not found", light)
+	}
+
+	if strings.Trim(name, " ") == "" {
+		return errors.New("Name must not be empty")
+	}
+
+	client := &http.Client{}
+	reqBody := strings.NewReader(fmt.Sprintf("{ \"name\": \"%s\" }", name))
+	req, err := http.NewRequest("PUT", fmt.Sprintf("%s/lights/%d", h.baseURL, light), reqBody)
+	if err != nil {
+		return err
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	fullResponse := string(body)
+	fullResponse = strings.ToLower(fullResponse)
+
+	if !strings.Contains(fullResponse, "updated") && !strings.Contains(fullResponse, "success") {
+		return fmt.Errorf("Unable to rename light %d to %s", light, name)
+	}
+
+	return nil
+}
+
 // TurnOnLight turns on the specified Phillips Hue light without setting the color
 func (h *Connection) TurnOnLight(light int) error {
 	// Error checking
@@ -327,45 +366,6 @@ func (h *Connection) TurnOffLight(light int) error {
 	err := h.changeLightState(light, state)
 	if err != nil {
 		return err
-	}
-
-	return nil
-}
-
-// RenameLight renames the specified Phillips Hue light
-func (h *Connection) RenameLight(light int, name string) error {
-	// Error checking
-	if !h.doesLightExist(light) {
-		return fmt.Errorf("Light %d not found", light)
-	}
-
-	if strings.Trim(name, " ") == "" {
-		return errors.New("Name must not be empty")
-	}
-
-	client := &http.Client{}
-	reqBody := strings.NewReader(fmt.Sprintf("{ \"name\": \"%s\" }", name))
-	req, err := http.NewRequest("PUT", fmt.Sprintf("%s/lights/%d", h.baseURL, light), reqBody)
-	if err != nil {
-		return err
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	fullResponse := string(body)
-	fullResponse = strings.ToLower(fullResponse)
-
-	if !strings.Contains(fullResponse, "updated") && !strings.Contains(fullResponse, "success") {
-		return fmt.Errorf("Unable to rename light %d to %s", light, name)
 	}
 
 	return nil

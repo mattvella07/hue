@@ -61,56 +61,6 @@ func TestGetAllLights(t *testing.T) {
 	})
 }
 
-func TestGetLight(t *testing.T) {
-	t.Run("Found", func(t *testing.T) {
-		h, server := createTestConnection(1)
-		defer server.Close()
-
-		light, err := h.GetLight(1)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		{
-			expected := "Hue color lamp 1"
-			if light.Name != expected {
-				t.Fatalf("Expected Name to equal %s, got %s", expected, light.Name)
-			}
-		}
-
-		{
-			expected := "Extended color"
-			if light.Type != expected {
-				t.Fatalf("Expected Type to equal %s, got %s", expected, light.Type)
-			}
-		}
-
-		{
-			expected := "Phillips"
-			if light.ManufacturerName != expected {
-				t.Fatalf("Expected ManufacturerName to equal %s, got %s", expected, light.ManufacturerName)
-			}
-		}
-	})
-
-	t.Run("Not found", func(t *testing.T) {
-		h, server := createTestConnection(2)
-		defer server.Close()
-
-		_, err := h.GetLight(1)
-		if err == nil {
-			t.Fatal("Expected an error, got nil")
-		}
-
-		{
-			expected := "Light not found"
-			if err.Error() != expected {
-				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
-			}
-		}
-	})
-}
-
 func TestGetNewLights(t *testing.T) {
 	t.Run("New light found", func(t *testing.T) {
 		h, server := createTestConnection(1)
@@ -176,6 +126,96 @@ func TestFindNewLights(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+}
+
+func TestGetLight(t *testing.T) {
+	t.Run("Found", func(t *testing.T) {
+		h, server := createTestConnection(1)
+		defer server.Close()
+
+		light, err := h.GetLight(1)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		{
+			expected := "Hue color lamp 1"
+			if light.Name != expected {
+				t.Fatalf("Expected Name to equal %s, got %s", expected, light.Name)
+			}
+		}
+
+		{
+			expected := "Extended color"
+			if light.Type != expected {
+				t.Fatalf("Expected Type to equal %s, got %s", expected, light.Type)
+			}
+		}
+
+		{
+			expected := "Phillips"
+			if light.ManufacturerName != expected {
+				t.Fatalf("Expected ManufacturerName to equal %s, got %s", expected, light.ManufacturerName)
+			}
+		}
+	})
+
+	t.Run("Not found", func(t *testing.T) {
+		h, server := createTestConnection(2)
+		defer server.Close()
+
+		_, err := h.GetLight(1)
+		if err == nil {
+			t.Fatal("Expected an error, got nil")
+		}
+
+		{
+			expected := "Light not found"
+			if err.Error() != expected {
+				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
+			}
+		}
+	})
+}
+
+func TestRenameLight(t *testing.T) {
+	h, server := createTestConnection(1)
+	defer server.Close()
+
+	t.Run("Successful rename", func(t *testing.T) {
+		err := h.RenameLight(1, "Light Renamed")
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("Light doesn't exist", func(t *testing.T) {
+		err := h.RenameLight(3, "Light Renamed")
+		if err == nil {
+			t.Fatal("Expected an error, got nil")
+		}
+
+		{
+			expected := "Light 3 not found"
+			if err.Error() != expected {
+				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
+			}
+		}
+	})
+
+	t.Run("Inavlid name", func(t *testing.T) {
+		err := h.RenameLight(1, "")
+		if err == nil {
+			t.Fatal("Expected an error, got nil")
+		}
+
+		{
+			expected := "Name must not be empty"
+			if err.Error() != expected {
+				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
+			}
+		}
+	})
 }
 
 func TestTurnOnLight(t *testing.T) {
@@ -319,46 +359,6 @@ func TestTurnOffLight(t *testing.T) {
 
 		{
 			expected := "Light 3 not found"
-			if err.Error() != expected {
-				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
-			}
-		}
-	})
-}
-
-func TestRenameLight(t *testing.T) {
-	h, server := createTestConnection(1)
-	defer server.Close()
-
-	t.Run("Successful rename", func(t *testing.T) {
-		err := h.RenameLight(1, "Light Renamed")
-		if err != nil {
-			t.Fatal(err)
-		}
-	})
-
-	t.Run("Light doesn't exist", func(t *testing.T) {
-		err := h.RenameLight(3, "Light Renamed")
-		if err == nil {
-			t.Fatal("Expected an error, got nil")
-		}
-
-		{
-			expected := "Light 3 not found"
-			if err.Error() != expected {
-				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
-			}
-		}
-	})
-
-	t.Run("Inavlid name", func(t *testing.T) {
-		err := h.RenameLight(1, "")
-		if err == nil {
-			t.Fatal("Expected an error, got nil")
-		}
-
-		{
-			expected := "Name must not be empty"
 			if err.Error() != expected {
 				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
 			}
