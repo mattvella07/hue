@@ -260,9 +260,9 @@ func (h *Connection) SetGroupClass(group int, class string) error {
 	return nil
 }
 
-// TurnOnAllLightsInGroup turns on all lights in the specified Phillips Hue group
+// TurnOnGroup turns on all lights in the specified Phillips Hue group
 // without setting the color
-func (h *Connection) TurnOnAllLightsInGroup(group int) error {
+func (h *Connection) TurnOnGroup(group int) error {
 	// Error checking
 	if !h.doesGroupExist(group) {
 		return fmt.Errorf("Group %d not found", group)
@@ -278,10 +278,10 @@ func (h *Connection) TurnOnAllLightsInGroup(group int) error {
 	return nil
 }
 
-// TurnOnAllLightsInGroupWithColor turns on all lights in the specified Phillips Hue group
+// TurnOnGroupWithColor turns on all lights in the specified Phillips Hue group
 // to the color specified by the x and y parameters. Also sets the Bri, Hue, and Sat
 // properties
-func (h *Connection) TurnOnAllLightsInGroupWithColor(group int, x, y float32, bri, hue, sat int) error {
+func (h *Connection) TurnOnGroupWithColor(group int, x, y float32, bri, hue, sat int) error {
 	// Error checking
 	if !h.doesGroupExist(group) {
 		return fmt.Errorf("Group %d not found", group)
@@ -302,8 +302,8 @@ func (h *Connection) TurnOnAllLightsInGroupWithColor(group int, x, y float32, br
 	return nil
 }
 
-// TurnOffAllLightsInGroup turns off all lights in the specified Phillips Hue group
-func (h *Connection) TurnOffAllLightsInGroup(group int) error {
+// TurnOffGroup turns off all lights in the specified Phillips Hue group
+func (h *Connection) TurnOffGroup(group int) error {
 	// Error checking
 	if !h.doesGroupExist(group) {
 		return fmt.Errorf("Group %d not found", group)

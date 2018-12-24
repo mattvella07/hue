@@ -164,7 +164,7 @@ func (h *Connection) CreateSchedule(name, description string, command ScheduleCo
 	return nil
 }
 
-// GetSchedule gets the specified all Phillips Hue schedule by ID
+// GetSchedule gets the specified Phillips Hue schedule by ID
 func (h *Connection) GetSchedule(schedule int) (Schedule, error) {
 	err := h.initializeHue()
 	if err != nil {

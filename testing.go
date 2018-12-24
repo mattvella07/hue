@@ -272,7 +272,6 @@ func generateTestData(url string) interface{} {
 		}
 
 		return data
-
 	case "/scenes":
 		data := sceneTestData{
 			One: Scene{
@@ -283,7 +282,7 @@ func generateTestData(url string) interface{} {
 				Owner:   "abcd",
 				Recycle: true,
 				Locked:  false,
-				AppData: sceneAppData{
+				AppData: SceneAppData{
 					Version: 1,
 					Data:    "myAppData",
 				},
@@ -291,6 +290,25 @@ func generateTestData(url string) interface{} {
 				LastUpdated: "2018-12-21T12:00:00",
 				Version:     1,
 			},
+		}
+
+		return data
+	case "/scenes/1":
+		data := Scene{
+			Name:    "Night time",
+			Type:    "LightScene",
+			Group:   "1",
+			Lights:  []string{"1", "2"},
+			Owner:   "abcd",
+			Recycle: true,
+			Locked:  false,
+			AppData: SceneAppData{
+				Version: 1,
+				Data:    "myAppData",
+			},
+			Picture:     "",
+			LastUpdated: "2018-12-21T12:00:00",
+			Version:     1,
 		}
 
 		return data

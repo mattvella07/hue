@@ -88,14 +88,14 @@ func main() {
 
 	// fmt.Println("Updated class name")
 
-	// err = h.TurnOnAllLightsInGroupWithColor(1, 0.2, 0.9, 100, 200, 200)
+	// err = h.TurnOnGroupWithColor(1, 0.2, 0.9, 100, 200, 200)
 	// if err != nil {
 	// 	log.Fatalln(err)
 	// }
 
 	// fmt.Println("Turned on all in group 1")
 
-	err = h.TurnOffAllLightsInGroup(1)
+	err = h.TurnOffGroup(1)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -140,16 +140,55 @@ func main() {
 
 	// fmt.Println("Schedule 6 deleted")
 
-	// scenes, err := h.GetAllScenes()
+	scenes, err := h.GetAllScenes()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	for _, s := range scenes {
+		fmt.Println(s.ID, ": ", s.Name, " ", s.Lights)
+	}
+
+	// err = h.CreateLightScene("Scene 1", []int{1}, true, hue.SceneAppData{})
 	// if err != nil {
 	// 	log.Fatalln(err)
 	// }
 
-	// fmt.Println("SCENES")
-	// fmt.Println(len(scenes))
-	// for _, s := range scenes {
-	// 	fmt.Println(s.ID)
+	// fmt.Println("Scene created!")
+
+	// err = h.CreateGroupScene("Scene Group 1", 1, true, hue.SceneAppData{})
+	// if err != nil {
+	// 	log.Fatalln(err)
 	// }
 
-	// fmt.Println(scenes)
+	// fmt.Println("Group Scene created!")
+
+	sc, err := h.GetScene("MwnFecYhwouu-Hq")
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Println("GetScene")
+	fmt.Println(sc)
+
+	// err = h.DeleteScene("3B1VzB2CKSuoAA-")
+	// if err != nil {
+	// 	log.Fatalln(err)
+	// }
+
+	// fmt.Println("Scene Deleted")
+
+	// err = h.RenameScene("XPnyhaWsrEF1VR9", "Scene 3")
+	// if err != nil {
+	// 	log.Fatalln(err)
+	// }
+
+	// fmt.Println("Scene renamed")
+
+	// err = h.SetLightsInScene("XPnyhaWsrEF1VR9", []int{2})
+	// if err != nil {
+	// 	log.Fatalln(err)
+	// }
+
+	// fmt.Println("Scene lights updated")
 }

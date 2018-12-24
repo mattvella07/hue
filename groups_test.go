@@ -339,19 +339,19 @@ func TestDeleteGroup(t *testing.T) {
 	})
 }
 
-func TestTurnOnAllLightsInGroup(t *testing.T) {
+func TestTurnOnGroup(t *testing.T) {
 	h, server := createTestConnection(1)
 	defer server.Close()
 
 	t.Run("Successful", func(t *testing.T) {
-		err := h.TurnOnAllLightsInGroup(1)
+		err := h.TurnOnGroup(1)
 		if err != nil {
 			t.Fatal(err)
 		}
 	})
 
 	t.Run("Group doesn't exist", func(t *testing.T) {
-		err := h.TurnOnAllLightsInGroup(3)
+		err := h.TurnOnGroup(3)
 		if err == nil {
 			t.Fatal("Expected an error, got nil")
 		}
@@ -365,19 +365,19 @@ func TestTurnOnAllLightsInGroup(t *testing.T) {
 	})
 }
 
-func TestTurnOnAllLightsInGroupWithColor(t *testing.T) {
+func TestTurnOnGroupWithColor(t *testing.T) {
 	h, server := createTestConnection(1)
 	defer server.Close()
 
 	t.Run("Successful", func(t *testing.T) {
-		err := h.TurnOnAllLightsInGroupWithColor(1, 0.3, 0.2, 100, 200, 233)
+		err := h.TurnOnGroupWithColor(1, 0.3, 0.2, 100, 200, 233)
 		if err != nil {
 			t.Fatal(err)
 		}
 	})
 
 	t.Run("Group doesn't exist", func(t *testing.T) {
-		err := h.TurnOnAllLightsInGroupWithColor(3, 0.3, 0.2, 100, 200, 233)
+		err := h.TurnOnGroupWithColor(3, 0.3, 0.2, 100, 200, 233)
 		if err == nil {
 			t.Fatal("Expected an error, got nil")
 		}
@@ -391,7 +391,7 @@ func TestTurnOnAllLightsInGroupWithColor(t *testing.T) {
 	})
 
 	t.Run("Invalid x value", func(t *testing.T) {
-		err := h.TurnOnAllLightsInGroupWithColor(1, 2, 0.2, 100, 200, 233)
+		err := h.TurnOnGroupWithColor(1, 2, 0.2, 100, 200, 233)
 		if err == nil {
 			t.Fatal("Expected an error, got nil")
 		}
@@ -405,7 +405,7 @@ func TestTurnOnAllLightsInGroupWithColor(t *testing.T) {
 	})
 
 	t.Run("Invalid y value", func(t *testing.T) {
-		err := h.TurnOnAllLightsInGroupWithColor(1, 0.2, 3, 100, 200, 233)
+		err := h.TurnOnGroupWithColor(1, 0.2, 3, 100, 200, 233)
 		if err == nil {
 			t.Fatal("Expected an error, got nil")
 		}
@@ -419,7 +419,7 @@ func TestTurnOnAllLightsInGroupWithColor(t *testing.T) {
 	})
 
 	t.Run("Invalid bri value", func(t *testing.T) {
-		err := h.TurnOnAllLightsInGroupWithColor(1, 0.3, 0.2, 300, 200, 233)
+		err := h.TurnOnGroupWithColor(1, 0.3, 0.2, 300, 200, 233)
 		if err == nil {
 			t.Fatal("Expected an error, got nil")
 		}
@@ -433,7 +433,7 @@ func TestTurnOnAllLightsInGroupWithColor(t *testing.T) {
 	})
 
 	t.Run("Invalid hue value", func(t *testing.T) {
-		err := h.TurnOnAllLightsInGroupWithColor(1, 0.3, 0.2, 100, 65539, 233)
+		err := h.TurnOnGroupWithColor(1, 0.3, 0.2, 100, 65539, 233)
 		if err == nil {
 			t.Fatal("Expected an error, got nil")
 		}
@@ -447,7 +447,7 @@ func TestTurnOnAllLightsInGroupWithColor(t *testing.T) {
 	})
 
 	t.Run("Invalid sat value", func(t *testing.T) {
-		err := h.TurnOnAllLightsInGroupWithColor(1, 0.3, 0.2, 100, 200, 350)
+		err := h.TurnOnGroupWithColor(1, 0.3, 0.2, 100, 200, 350)
 		if err == nil {
 			t.Fatal("Expected an error, got nil")
 		}
@@ -461,19 +461,19 @@ func TestTurnOnAllLightsInGroupWithColor(t *testing.T) {
 	})
 }
 
-func TestTurnOffAllLightsInGroup(t *testing.T) {
+func TestTurnOffGroup(t *testing.T) {
 	h, server := createTestConnection(1)
 	defer server.Close()
 
 	t.Run("Successful", func(t *testing.T) {
-		err := h.TurnOffAllLightsInGroup(1)
+		err := h.TurnOffGroup(1)
 		if err != nil {
 			t.Fatal(err)
 		}
 	})
 
 	t.Run("Group doesn't exist", func(t *testing.T) {
-		err := h.TurnOffAllLightsInGroup(3)
+		err := h.TurnOffGroup(3)
 		if err == nil {
 			t.Fatal("Expected an error, got nil")
 		}
