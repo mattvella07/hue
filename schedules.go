@@ -40,22 +40,11 @@ type Schedule struct {
 	ID          int             `json:"id"`
 }
 
-// GetAllSchedules gets all Phillips Hue schedules
-func (h *Connection) GetAllSchedules() ([]Schedule, error) {
-	err := h.initializeHue()
+// GetSchedules gets all Phillips Hue schedules
+func (h *Connection) GetSchedules() ([]Schedule, error) {
+	body, err := h.get("schedules")
 	if err != nil {
-		return nil, err
-	}
-
-	resp, err := http.Get(fmt.Sprintf("%s/schedules", h.baseURL))
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
+		return []Schedule{}, err
 	}
 
 	if len(body) == 0 {
@@ -166,25 +155,14 @@ func (h *Connection) CreateSchedule(name, description string, command ScheduleCo
 
 // GetSchedule gets the specified Phillips Hue schedule by ID
 func (h *Connection) GetSchedule(schedule int) (Schedule, error) {
-	err := h.initializeHue()
-	if err != nil {
-		return Schedule{}, err
-	}
-
-	resp, err := http.Get(fmt.Sprintf("%s/schedules/%d", h.baseURL, schedule))
-	if err != nil {
-		return Schedule{}, err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := h.get(fmt.Sprintf("schedules/%d", schedule))
 	if err != nil {
 		return Schedule{}, err
 	}
 
 	// Schedule not found
 	if len(body) == 0 {
-		return Schedule{}, errors.New("Schedule not found")
+		return Schedule{}, fmt.Errorf("Schedule %d not found", schedule)
 	}
 
 	scheduleRes := Schedule{}

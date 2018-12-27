@@ -40,22 +40,11 @@ type Group struct {
 	ID      int         `json:"id"`
 }
 
-// GetAllGroups gets all Phillips Hue light groups connected to current bridge
-func (h *Connection) GetAllGroups() ([]Group, error) {
-	err := h.initializeHue()
+// GetGroups gets all Phillips Hue light groups connected to current bridge
+func (h *Connection) GetGroups() ([]Group, error) {
+	body, err := h.get("groups")
 	if err != nil {
-		return nil, err
-	}
-
-	resp, err := http.Get(fmt.Sprintf("%s/groups", h.baseURL))
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
+		return []Group{}, err
 	}
 
 	if len(body) == 0 {
@@ -166,25 +155,14 @@ func (h *Connection) CreateGroup(name, groupType, class string, lights []int) er
 
 // GetGroup gets the specified Phillips Hue light group
 func (h *Connection) GetGroup(group int) (Group, error) {
-	err := h.initializeHue()
-	if err != nil {
-		return Group{}, err
-	}
-
-	resp, err := http.Get(fmt.Sprintf("%s/groups/%d", h.baseURL, group))
-	if err != nil {
-		return Group{}, err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := h.get(fmt.Sprintf("groups/%d", group))
 	if err != nil {
 		return Group{}, err
 	}
 
 	// Group not found
 	if len(body) == 0 {
-		return Group{}, errors.New("Group not found")
+		return Group{}, fmt.Errorf("Group %d not found", group)
 	}
 
 	groupRes := Group{}

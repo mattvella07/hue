@@ -4,12 +4,12 @@ import (
 	"testing"
 )
 
-func TestGetAllGroups(t *testing.T) {
+func TestGetGroups(t *testing.T) {
 	t.Run("One group found", func(t *testing.T) {
 		h, server := createTestConnection(1)
 		defer server.Close()
 
-		groups, err := h.GetAllGroups()
+		groups, err := h.GetGroups()
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -54,7 +54,7 @@ func TestGetAllGroups(t *testing.T) {
 		h, server := createTestConnection(2)
 		defer server.Close()
 
-		groups, err := h.GetAllGroups()
+		groups, err := h.GetGroups()
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -185,7 +185,7 @@ func TestGetGroup(t *testing.T) {
 		}
 
 		{
-			expected := "Group not found"
+			expected := "Group 2 not found"
 			if err.Error() != expected {
 				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
 			}

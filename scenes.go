@@ -33,22 +33,11 @@ type Scene struct {
 	ID          string       `json:"id"`
 }
 
-// GetAllScenes gets all Phillips Hue scenes
-func (h *Connection) GetAllScenes() ([]Scene, error) {
-	err := h.initializeHue()
+// GetScenes gets all Phillips Hue scenes
+func (h *Connection) GetScenes() ([]Scene, error) {
+	body, err := h.get("scenes")
 	if err != nil {
-		return nil, err
-	}
-
-	resp, err := http.Get(fmt.Sprintf("%s/scenes", h.baseURL))
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
+		return []Scene{}, err
 	}
 
 	if len(body) == 0 {
@@ -271,25 +260,14 @@ func (h *Connection) DeleteScene(scene string) error {
 
 // GetScene gets the specified Phillips Hue scene by ID
 func (h *Connection) GetScene(scene string) (Scene, error) {
-	err := h.initializeHue()
-	if err != nil {
-		return Scene{}, err
-	}
-
-	resp, err := http.Get(fmt.Sprintf("%s/scenes/%s", h.baseURL, scene))
-	if err != nil {
-		return Scene{}, err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := h.get(fmt.Sprintf("scenes/%s", scene))
 	if err != nil {
 		return Scene{}, err
 	}
 
 	// Scene not found
 	if len(body) == 0 {
-		return Scene{}, errors.New("Scene not found")
+		return Scene{}, fmt.Errorf("Scene %s not found", scene)
 	}
 
 	sceneRes := Scene{}

@@ -15,7 +15,7 @@ func main() {
 	}
 
 	//Get all lights
-	lights, err := h.GetAllLights()
+	lights, err := h.GetLights()
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -44,7 +44,7 @@ func main() {
 		log.Fatalln(err)
 	} */
 
-	groups, err := h.GetAllGroups()
+	groups, err := h.GetGroups()
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -102,7 +102,7 @@ func main() {
 
 	fmt.Println("Turned off all lights in group 1")
 
-	schedules, err := h.GetAllSchedules()
+	schedules, err := h.GetSchedules()
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -140,7 +140,7 @@ func main() {
 
 	// fmt.Println("Schedule 6 deleted")
 
-	scenes, err := h.GetAllScenes()
+	scenes, err := h.GetScenes()
 	if err != nil {
 		log.Fatalln(err)
 	}

@@ -4,12 +4,12 @@ import (
 	"testing"
 )
 
-func TestGetAllLights(t *testing.T) {
+func TestGetLights(t *testing.T) {
 	t.Run("One light found", func(t *testing.T) {
 		h, server := createTestConnection(1)
 		defer server.Close()
 
-		lights, err := h.GetAllLights()
+		lights, err := h.GetLights()
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -47,7 +47,7 @@ func TestGetAllLights(t *testing.T) {
 		h, server := createTestConnection(2)
 		defer server.Close()
 
-		lights, err := h.GetAllLights()
+		lights, err := h.GetLights()
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -104,15 +104,15 @@ func TestGetNewLights(t *testing.T) {
 		h, server := createTestConnection(2)
 		defer server.Close()
 
-		_, err := h.GetNewLights()
-		if err == nil {
-			t.Fatal("Expected an error, got nil")
+		newLights, err := h.GetNewLights()
+		if err != nil {
+			t.Fatal(err)
 		}
 
 		{
-			expected := "No new lights found"
-			if err.Error() != expected {
-				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
+			expected := 0
+			if len(newLights.NewLights) != expected {
+				t.Fatalf("Expected %d new lights, got %d", expected, len(newLights.NewLights))
 			}
 		}
 	})
@@ -170,7 +170,7 @@ func TestGetLight(t *testing.T) {
 		}
 
 		{
-			expected := "Light not found"
+			expected := "Light 1 not found"
 			if err.Error() != expected {
 				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
 			}

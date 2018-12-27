@@ -91,22 +91,11 @@ type NewLightResponse struct {
 	LastScan  string     `json:"lastScan"`
 }
 
-// GetAllLights gets all Phillips Hue lights connected to current bridge
-func (h *Connection) GetAllLights() ([]Light, error) {
-	err := h.initializeHue()
+// GetLights gets all Phillips Hue lights connected to current bridge
+func (h *Connection) GetLights() ([]Light, error) {
+	body, err := h.get("lights")
 	if err != nil {
-		return nil, err
-	}
-
-	resp, err := http.Get(fmt.Sprintf("%s/lights", h.baseURL))
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
+		return []Light{}, err
 	}
 
 	if len(body) == 0 {
@@ -154,20 +143,13 @@ func (h *Connection) GetAllLights() ([]Light, error) {
 // GetNewLights gets Phillips Hue lights that were discovered the last time
 // FindNewLights was called
 func (h *Connection) GetNewLights() (NewLightResponse, error) {
-	err := h.initializeHue()
+	body, err := h.get("lights/new")
 	if err != nil {
 		return NewLightResponse{}, err
 	}
 
-	resp, err := http.Get(fmt.Sprintf("%s/lights/new", h.baseURL))
-	if err != nil {
-		return NewLightResponse{}, err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return NewLightResponse{}, err
+	if len(body) == 0 {
+		return NewLightResponse{}, nil
 	}
 
 	fullResponse := string(body)
@@ -241,25 +223,14 @@ func (h *Connection) FindNewLights() error {
 
 // GetLight gets the specified Phillips Hue light
 func (h *Connection) GetLight(light int) (Light, error) {
-	err := h.initializeHue()
-	if err != nil {
-		return Light{}, err
-	}
-
-	resp, err := http.Get(fmt.Sprintf("%s/lights/%d", h.baseURL, light))
-	if err != nil {
-		return Light{}, err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := h.get(fmt.Sprintf("lights/%d", light))
 	if err != nil {
 		return Light{}, err
 	}
 
 	// Light not found
 	if len(body) == 0 {
-		return Light{}, errors.New("Light not found")
+		return Light{}, fmt.Errorf("Light %d not found", light)
 	}
 
 	lightRes := Light{}

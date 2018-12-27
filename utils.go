@@ -1,10 +1,64 @@
 package hue
 
 import (
+	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"reflect"
 	"strings"
 )
+
+func (h *Connection) get(url string) ([]byte, error) {
+	err := h.initializeHue()
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := http.Get(fmt.Sprintf("%s/%s", h.baseURL, url))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return body, nil
+}
+
+func (h *Connection) execute(req *http.Request) error {
+	err := h.initializeHue()
+	if err != nil {
+		return err
+	}
+
+	client := &http.Client{}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	fullResponse := string(body)
+	fullResponse = strings.ToLower(fullResponse)
+
+	// Check for error in response
+	if strings.Contains(fullResponse, "error") {
+		errMsg := fullResponse[strings.Index(fullResponse, "\"description\":\"")+15 : strings.Index(fullResponse, "\"}}]")]
+		return errors.New(errMsg)
+	}
+
+	return nil
+}
 
 // formatSlice formats an int slice as a JSON string
 func (h *Connection) formatSlice(sli []int) string {

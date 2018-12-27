@@ -2,12 +2,12 @@ package hue
 
 import "testing"
 
-func TestGetAllScenes(t *testing.T) {
+func TestGetScenes(t *testing.T) {
 	t.Run("One scene found", func(t *testing.T) {
 		h, server := createTestConnection(1)
 		defer server.Close()
 
-		scenes, err := h.GetAllScenes()
+		scenes, err := h.GetScenes()
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -52,7 +52,7 @@ func TestGetAllScenes(t *testing.T) {
 		h, server := createTestConnection(2)
 		defer server.Close()
 
-		scenes, err := h.GetAllScenes()
+		scenes, err := h.GetScenes()
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -329,7 +329,7 @@ func TestGetScene(t *testing.T) {
 		}
 
 		{
-			expected := "Scene not found"
+			expected := "Scene 2 not found"
 			if err.Error() != expected {
 				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
 			}

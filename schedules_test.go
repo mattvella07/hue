@@ -4,12 +4,12 @@ import (
 	"testing"
 )
 
-func TestGetAllSchedules(t *testing.T) {
+func TestGetSchedules(t *testing.T) {
 	t.Run("One schedule found", func(t *testing.T) {
 		h, server := createTestConnection(1)
 		defer server.Close()
 
-		schedules, err := h.GetAllSchedules()
+		schedules, err := h.GetSchedules()
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -54,7 +54,7 @@ func TestGetAllSchedules(t *testing.T) {
 		h, server := createTestConnection(2)
 		defer server.Close()
 
-		schedules, err := h.GetAllSchedules()
+		schedules, err := h.GetSchedules()
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -264,7 +264,7 @@ func TestGetSchedule(t *testing.T) {
 		}
 
 		{
-			expected := "Schedule not found"
+			expected := "Schedule 2 not found"
 			if err.Error() != expected {
 				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
 			}
