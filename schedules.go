@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
@@ -42,19 +41,19 @@ type Schedule struct {
 
 // GetSchedules gets all Phillips Hue schedules
 func (h *Connection) GetSchedules() ([]Schedule, error) {
-	body, err := h.get("schedules")
+	data, err := h.get("schedules")
 	if err != nil {
 		return []Schedule{}, err
 	}
 
-	if len(body) == 0 {
+	if len(data) == 0 {
 		return []Schedule{}, nil
 	}
 
 	// Create map to store JSON response
 	fullResponse := make(map[string]interface{})
 
-	err = json.Unmarshal(body, &fullResponse)
+	err = json.Unmarshal(data, &fullResponse)
 	if err != nil {
 		return nil, err
 	}
@@ -118,36 +117,15 @@ func (h *Connection) CreateSchedule(name, description string, command ScheduleCo
 		}
 	}
 
-	err := h.initializeHue()
-	if err != nil {
-		return err
-	}
-
-	client := &http.Client{}
 	reqBody := strings.NewReader(fmt.Sprintf("{\"name\": \"%s\", \"description\": \"%s\", \"command\": %s, \"localtime\": \"%s\", \"status\": \"%s\", \"autodelete\": %t, \"recycle\": %t }", name, description, h.formatStruct(command), localtime, status, autodelete, recycle))
-
 	req, err := http.NewRequest("POST", fmt.Sprintf("%s/schedules", h.baseURL), reqBody)
 	if err != nil {
 		return err
 	}
 
-	resp, err := client.Do(req)
+	err = h.execute(req)
 	if err != nil {
 		return err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	fullResponse := string(body)
-	fullResponse = strings.ToLower(fullResponse)
-
-	if strings.Contains(fullResponse, "error") {
-		errMsg := fullResponse[strings.Index(fullResponse, "\"description\":\"")+15 : strings.Index(fullResponse, "\"}}")]
-		return errors.New(errMsg)
 	}
 
 	return nil
@@ -155,19 +133,19 @@ func (h *Connection) CreateSchedule(name, description string, command ScheduleCo
 
 // GetSchedule gets the specified Phillips Hue schedule by ID
 func (h *Connection) GetSchedule(schedule int) (Schedule, error) {
-	body, err := h.get(fmt.Sprintf("schedules/%d", schedule))
+	data, err := h.get(fmt.Sprintf("schedules/%d", schedule))
 	if err != nil {
 		return Schedule{}, err
 	}
 
 	// Schedule not found
-	if len(body) == 0 {
+	if len(data) == 0 {
 		return Schedule{}, fmt.Errorf("Schedule %d not found", schedule)
 	}
 
 	scheduleRes := Schedule{}
 
-	err = json.Unmarshal(body, &scheduleRes)
+	err = json.Unmarshal(data, &scheduleRes)
 	if err != nil {
 		return Schedule{}, err
 	}
@@ -241,29 +219,14 @@ func (h *Connection) DeleteSchedule(schedule int) error {
 		return fmt.Errorf("Schedule %d not found", schedule)
 	}
 
-	client := &http.Client{}
 	req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/schedules/%d", h.baseURL, schedule), nil)
 	if err != nil {
 		return err
 	}
 
-	resp, err := client.Do(req)
+	err = h.execute(req)
 	if err != nil {
 		return err
-	}
-	defer resp.Body.Close()
-
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	dataStr := string(data)
-
-	// Check for error in response
-	if strings.Contains(dataStr, "error") {
-		errMsg := dataStr[strings.Index(dataStr, "\"description\":\"")+15 : strings.Index(dataStr, "\"}}]")]
-		return errors.New(errMsg)
 	}
 
 	return nil
@@ -280,34 +243,15 @@ func (h *Connection) doesScheduleExist(schedule int) bool {
 }
 
 func (h *Connection) updateSchedule(schedule int, attributes string) error {
-	err := h.initializeHue()
+	reqBody := strings.NewReader(attributes)
+	req, err := http.NewRequest("PUT", fmt.Sprintf("%s/schedules/%d", h.baseURL, schedule), reqBody)
 	if err != nil {
 		return err
 	}
 
-	client := &http.Client{}
-	body := strings.NewReader(attributes)
-	req, err := http.NewRequest("PUT", fmt.Sprintf("%s/schedules/%d", h.baseURL, schedule), body)
+	err = h.execute(req)
 	if err != nil {
 		return err
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	dataStr := string(data)
-
-	if strings.Contains(dataStr, "error") {
-		errMsg := dataStr[strings.Index(dataStr, "\"description\":\"")+15 : strings.Index(dataStr, "\"}}]")]
-		return errors.New(errMsg)
 	}
 
 	return nil

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"strings"
 )
@@ -35,19 +34,19 @@ type Scene struct {
 
 // GetScenes gets all Phillips Hue scenes
 func (h *Connection) GetScenes() ([]Scene, error) {
-	body, err := h.get("scenes")
+	data, err := h.get("scenes")
 	if err != nil {
 		return []Scene{}, err
 	}
 
-	if len(body) == 0 {
+	if len(data) == 0 {
 		return []Scene{}, nil
 	}
 
 	// Create map to store JSON response
 	fullResponse := make(map[string]interface{})
 
-	err = json.Unmarshal(body, &fullResponse)
+	err = json.Unmarshal(data, &fullResponse)
 	if err != nil {
 		return nil, err
 	}
@@ -88,11 +87,6 @@ func (h *Connection) CreateLightScene(name string, lights []int, recycle bool, a
 		return errors.New("One of the lights is invalid")
 	}
 
-	err := h.initializeHue()
-	if err != nil {
-		return err
-	}
-
 	bodyStr := fmt.Sprintf("{\"name\": \"%s\", \"type\": \"LightScene\", \"lights\": %s, \"recycle\": %t", name, h.formatSlice(lights), recycle)
 
 	if appData.Version != 0 || strings.Trim(appData.Data, " ") != "" {
@@ -100,30 +94,15 @@ func (h *Connection) CreateLightScene(name string, lights []int, recycle bool, a
 	}
 	bodyStr += "}"
 
-	client := &http.Client{}
 	reqBody := strings.NewReader(bodyStr)
 	req, err := http.NewRequest("POST", fmt.Sprintf("%s/scenes", h.baseURL), reqBody)
 	if err != nil {
 		return err
 	}
 
-	resp, err := client.Do(req)
+	err = h.execute(req)
 	if err != nil {
 		return err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	fullResponse := string(body)
-	fullResponse = strings.ToLower(fullResponse)
-
-	if strings.Contains(fullResponse, "error") {
-		errMsg := fullResponse[strings.Index(fullResponse, "description")+14 : strings.LastIndex(fullResponse, "\"")]
-		return fmt.Errorf("Unable to create scene %s: %s", name, errMsg)
 	}
 
 	return nil
@@ -136,11 +115,6 @@ func (h *Connection) CreateGroupScene(name string, group int, recycle bool, appD
 		return fmt.Errorf("Group %d not found", group)
 	}
 
-	err := h.initializeHue()
-	if err != nil {
-		return err
-	}
-
 	bodyStr := fmt.Sprintf("{\"name\": \"%s\", \"type\": \"GroupScene\", \"group\": \"%d\", \"recycle\": %t", name, group, recycle)
 
 	if appData.Version != 0 || strings.Trim(appData.Data, " ") != "" {
@@ -148,30 +122,15 @@ func (h *Connection) CreateGroupScene(name string, group int, recycle bool, appD
 	}
 	bodyStr += "}"
 
-	client := &http.Client{}
 	reqBody := strings.NewReader(bodyStr)
 	req, err := http.NewRequest("POST", fmt.Sprintf("%s/scenes", h.baseURL), reqBody)
 	if err != nil {
 		return err
 	}
 
-	resp, err := client.Do(req)
+	err = h.execute(req)
 	if err != nil {
 		return err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	fullResponse := string(body)
-	fullResponse = strings.ToLower(fullResponse)
-
-	if strings.Contains(fullResponse, "error") {
-		errMsg := fullResponse[strings.Index(fullResponse, "description")+14 : strings.LastIndex(fullResponse, "\"")]
-		return fmt.Errorf("Unable to create scene %s: %s", name, errMsg)
 	}
 
 	return nil
@@ -230,29 +189,14 @@ func (h *Connection) DeleteScene(scene string) error {
 		return fmt.Errorf("Scene %s not found", scene)
 	}
 
-	client := &http.Client{}
 	req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/scenes/%s", h.baseURL, scene), nil)
 	if err != nil {
 		return err
 	}
 
-	resp, err := client.Do(req)
+	err = h.execute(req)
 	if err != nil {
 		return err
-	}
-	defer resp.Body.Close()
-
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	dataStr := string(data)
-
-	// Check for error in response
-	if strings.Contains(dataStr, "error") {
-		errMsg := dataStr[strings.Index(dataStr, "\"description\":\"")+15 : strings.Index(dataStr, "\"}}]")]
-		return errors.New(errMsg)
 	}
 
 	return nil
@@ -260,19 +204,19 @@ func (h *Connection) DeleteScene(scene string) error {
 
 // GetScene gets the specified Phillips Hue scene by ID
 func (h *Connection) GetScene(scene string) (Scene, error) {
-	body, err := h.get(fmt.Sprintf("scenes/%s", scene))
+	data, err := h.get(fmt.Sprintf("scenes/%s", scene))
 	if err != nil {
 		return Scene{}, err
 	}
 
 	// Scene not found
-	if len(body) == 0 {
+	if len(data) == 0 {
 		return Scene{}, fmt.Errorf("Scene %s not found", scene)
 	}
 
 	sceneRes := Scene{}
 
-	err = json.Unmarshal(body, &sceneRes)
+	err = json.Unmarshal(data, &sceneRes)
 	if err != nil {
 		return Scene{}, err
 	}
@@ -298,34 +242,15 @@ func (h *Connection) doesSceneExist(scene string) bool {
 func (h *Connection) updateScene(scene, value string) error {
 	url := fmt.Sprintf("%s/scenes/%s", h.baseURL, scene)
 
-	err := h.initializeHue()
+	reqBody := strings.NewReader(value)
+	req, err := http.NewRequest("PUT", url, reqBody)
 	if err != nil {
 		return err
 	}
 
-	client := &http.Client{}
-	body := strings.NewReader(value)
-	req, err := http.NewRequest("PUT", url, body)
+	err = h.execute(req)
 	if err != nil {
 		return err
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	dataStr := string(data)
-
-	if strings.Contains(dataStr, "error") {
-		errMsg := dataStr[strings.Index(dataStr, "\"description\":\"")+15 : strings.Index(dataStr, "\"}}]")]
-		return errors.New(errMsg)
 	}
 
 	return nil

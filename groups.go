@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
@@ -42,19 +41,19 @@ type Group struct {
 
 // GetGroups gets all Phillips Hue light groups connected to current bridge
 func (h *Connection) GetGroups() ([]Group, error) {
-	body, err := h.get("groups")
+	data, err := h.get("groups")
 	if err != nil {
 		return []Group{}, err
 	}
 
-	if len(body) == 0 {
+	if len(data) == 0 {
 		return []Group{}, nil
 	}
 
 	// Create map to store JSON response
 	fullResponse := make(map[string]interface{})
 
-	err = json.Unmarshal(body, &fullResponse)
+	err = json.Unmarshal(data, &fullResponse)
 	if err != nil {
 		return nil, err
 	}
@@ -119,35 +118,15 @@ func (h *Connection) CreateGroup(name, groupType, class string, lights []int) er
 		return errors.New("One of the lights is invalid")
 	}
 
-	err := h.initializeHue()
-	if err != nil {
-		return err
-	}
-
-	client := &http.Client{}
 	reqBody := strings.NewReader(fmt.Sprintf("{\"name\": \"%s\", \"type\": \"%s\", \"class\": \"%s\", \"lights\": %s}", name, groupType, class, h.formatSlice(lights)))
 	req, err := http.NewRequest("POST", fmt.Sprintf("%s/groups", h.baseURL), reqBody)
 	if err != nil {
 		return err
 	}
 
-	resp, err := client.Do(req)
+	err = h.execute(req)
 	if err != nil {
 		return err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	fullResponse := string(body)
-	fullResponse = strings.ToLower(fullResponse)
-
-	if strings.Contains(fullResponse, "error") {
-		errMsg := fullResponse[strings.Index(fullResponse, "description")+14 : strings.LastIndex(fullResponse, "\"")]
-		return fmt.Errorf("Unable to create group %s: %s", name, errMsg)
 	}
 
 	return nil
@@ -155,19 +134,19 @@ func (h *Connection) CreateGroup(name, groupType, class string, lights []int) er
 
 // GetGroup gets the specified Phillips Hue light group
 func (h *Connection) GetGroup(group int) (Group, error) {
-	body, err := h.get(fmt.Sprintf("groups/%d", group))
+	data, err := h.get(fmt.Sprintf("groups/%d", group))
 	if err != nil {
 		return Group{}, err
 	}
 
 	// Group not found
-	if len(body) == 0 {
+	if len(data) == 0 {
 		return Group{}, fmt.Errorf("Group %d not found", group)
 	}
 
 	groupRes := Group{}
 
-	err = json.Unmarshal(body, &groupRes)
+	err = json.Unmarshal(data, &groupRes)
 	if err != nil {
 		return Group{}, err
 	}
@@ -310,29 +289,14 @@ func (h *Connection) DeleteGroup(group int) error {
 		return fmt.Errorf("Unable to delete group %d: Can't delete group with a type of LightSource or Luminaire", group)
 	}
 
-	client := &http.Client{}
 	req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/groups/%d", h.baseURL, group), nil)
 	if err != nil {
 		return err
 	}
 
-	resp, err := client.Do(req)
+	err = h.execute(req)
 	if err != nil {
 		return err
-	}
-	defer resp.Body.Close()
-
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	dataStr := string(data)
-
-	// Check for error in response
-	if strings.Contains(dataStr, "error") {
-		errMsg := dataStr[strings.Index(dataStr, "\"description\":\"")+15 : strings.Index(dataStr, "\"}}]")]
-		return errors.New(errMsg)
 	}
 
 	return nil
@@ -359,34 +323,15 @@ func (h *Connection) updateGroup(group int, toUpdate, value string) error {
 		return fmt.Errorf("Error while updating group %d", group)
 	}
 
-	err := h.initializeHue()
+	reqBody := strings.NewReader(value)
+	req, err := http.NewRequest("PUT", url, reqBody)
 	if err != nil {
 		return err
 	}
 
-	client := &http.Client{}
-	body := strings.NewReader(value)
-	req, err := http.NewRequest("PUT", url, body)
+	err = h.execute(req)
 	if err != nil {
 		return err
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	dataStr := string(data)
-
-	if strings.Contains(dataStr, "error") {
-		errMsg := dataStr[strings.Index(dataStr, "\"description\":\"")+15 : strings.Index(dataStr, "\"}}]")]
-		return errors.New(errMsg)
 	}
 
 	return nil

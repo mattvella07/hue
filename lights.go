@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
@@ -93,19 +92,19 @@ type NewLightResponse struct {
 
 // GetLights gets all Phillips Hue lights connected to current bridge
 func (h *Connection) GetLights() ([]Light, error) {
-	body, err := h.get("lights")
+	data, err := h.get("lights")
 	if err != nil {
 		return []Light{}, err
 	}
 
-	if len(body) == 0 {
+	if len(data) == 0 {
 		return []Light{}, nil
 	}
 
 	// Create map to store JSON response
 	fullResponse := make(map[string]interface{})
 
-	err = json.Unmarshal(body, &fullResponse)
+	err = json.Unmarshal(data, &fullResponse)
 	if err != nil {
 		return nil, err
 	}
@@ -143,16 +142,16 @@ func (h *Connection) GetLights() ([]Light, error) {
 // GetNewLights gets Phillips Hue lights that were discovered the last time
 // FindNewLights was called
 func (h *Connection) GetNewLights() (NewLightResponse, error) {
-	body, err := h.get("lights/new")
+	data, err := h.get("lights/new")
 	if err != nil {
 		return NewLightResponse{}, err
 	}
 
-	if len(body) == 0 {
+	if len(data) == 0 {
 		return NewLightResponse{}, nil
 	}
 
-	fullResponse := string(body)
+	fullResponse := string(data)
 
 	if len(fullResponse) <= 1 {
 		return NewLightResponse{}, errors.New("No new lights found")
@@ -201,41 +200,34 @@ func (h *Connection) GetNewLights() (NewLightResponse, error) {
 // FindNewLights finds new Phillips Hue lights that have been added since
 // the last time performing this call
 func (h *Connection) FindNewLights() error {
-	err := h.initializeHue()
-	if err != nil {
-		return err
-	}
-
-	client := &http.Client{}
 	req, err := http.NewRequest("POST", fmt.Sprintf("%s/lights", h.baseURL), nil)
 	if err != nil {
 		return err
 	}
 
-	resp, err := client.Do(req)
+	err = h.execute(req)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
 
 	return nil
 }
 
 // GetLight gets the specified Phillips Hue light
 func (h *Connection) GetLight(light int) (Light, error) {
-	body, err := h.get(fmt.Sprintf("lights/%d", light))
+	data, err := h.get(fmt.Sprintf("lights/%d", light))
 	if err != nil {
 		return Light{}, err
 	}
 
 	// Light not found
-	if len(body) == 0 {
+	if len(data) == 0 {
 		return Light{}, fmt.Errorf("Light %d not found", light)
 	}
 
 	lightRes := Light{}
 
-	err = json.Unmarshal(body, &lightRes)
+	err = json.Unmarshal(data, &lightRes)
 	if err != nil {
 		return Light{}, err
 	}
@@ -254,29 +246,15 @@ func (h *Connection) RenameLight(light int, name string) error {
 		return errors.New("Name must not be empty")
 	}
 
-	client := &http.Client{}
 	reqBody := strings.NewReader(fmt.Sprintf("{ \"name\": \"%s\" }", name))
 	req, err := http.NewRequest("PUT", fmt.Sprintf("%s/lights/%d", h.baseURL, light), reqBody)
 	if err != nil {
 		return err
 	}
 
-	resp, err := client.Do(req)
+	err = h.execute(req)
 	if err != nil {
 		return err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	fullResponse := string(body)
-	fullResponse = strings.ToLower(fullResponse)
-
-	if !strings.Contains(fullResponse, "updated") && !strings.Contains(fullResponse, "success") {
-		return fmt.Errorf("Unable to rename light %d to %s", light, name)
 	}
 
 	return nil
@@ -349,19 +327,12 @@ func (h *Connection) DeleteLight(light int) error {
 		return fmt.Errorf("Light %d not found", light)
 	}
 
-	client := &http.Client{}
 	req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/lights/%d", h.baseURL, light), nil)
 	if err != nil {
 		return err
 	}
 
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	_, err = ioutil.ReadAll(resp.Body)
+	err = h.execute(req)
 	if err != nil {
 		return err
 	}
@@ -390,23 +361,16 @@ func (h *Connection) allLightsValid(lights []int) bool {
 }
 
 func (h *Connection) changeLightState(light int, state string) error {
-	err := h.initializeHue()
+	reqBody := strings.NewReader(state)
+	req, err := http.NewRequest("PUT", fmt.Sprintf("%s/lights/%d/state", h.baseURL, light), reqBody)
 	if err != nil {
 		return err
 	}
 
-	client := &http.Client{}
-	body := strings.NewReader(state)
-	req, err := http.NewRequest("PUT", fmt.Sprintf("%s/lights/%d/state", h.baseURL, light), body)
+	err = h.execute(req)
 	if err != nil {
 		return err
 	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
 
 	return nil
 }
