@@ -32,6 +32,23 @@ type sceneTestData struct {
 	One Scene `json:"1"`
 }
 
+type sensorTestData struct {
+	One Sensor `json:"1"`
+}
+
+type newSensorTest struct {
+	Name string `json:"name"`
+}
+
+type newSensorTestData struct {
+	Five     newSensorTest `json:"5"`
+	LastScan string        `json:"lastscan"`
+}
+
+type ruleTestData struct {
+	One Rule `json:"1"`
+}
+
 func createTestConnection(scenario int) (Connection, *httptest.Server) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
@@ -309,6 +326,77 @@ func generateTestData(url string) interface{} {
 			Picture:     "",
 			LastUpdated: "2018-12-21T12:00:00",
 			Version:     1,
+		}
+
+		return data
+	case "/sensors":
+		data := sensorTestData{
+			One: Sensor{
+				State: SensorState{
+					Daylight:    true,
+					LastUpdated: "2014-06-27T07:38:51",
+				},
+				Config: SensorConfig{
+					On:            true,
+					Long:          "none",
+					Lat:           "none",
+					SunriseOffset: 50,
+					SunsetOffset:  50,
+				},
+				Name:             "Daylight",
+				Type:             "Daylight",
+				ModelID:          "PHDL00",
+				ManufacturerName: "Phillips",
+				SWVersion:        "1.0",
+				ID:               1,
+			},
+		}
+
+		return data
+	case "/sensors/new":
+		data := newSensorTestData{
+			Five: newSensorTest{
+				Name: "Sensor 5",
+			},
+			LastScan: "2018-10-12T12:00:00",
+		}
+
+		return data
+	case "/sensors/1":
+		data := Sensor{
+			State: SensorState{
+				Daylight:    true,
+				LastUpdated: "2014-06-27T07:38:51",
+			},
+			Config: SensorConfig{
+				On:            true,
+				Long:          "none",
+				Lat:           "none",
+				SunriseOffset: 50,
+				SunsetOffset:  50,
+			},
+			Name:             "Daylight",
+			Type:             "Daylight",
+			ModelID:          "PHDL00",
+			ManufacturerName: "Phillips",
+			SWVersion:        "1.0",
+			ID:               1,
+		}
+
+		return data
+	case "/rules":
+		data := ruleTestData{
+			One: Rule{
+				Name:           "Rule 1",
+				LastTriggered:  "2014-08-27T07:38:51",
+				CreationTime:   "2014-06-27T07:38:51",
+				TimesTriggered: 10,
+				Owner:          "abc",
+				Status:         "enabled",
+				Conditions:     []RuleConditions{},
+				Actions:        []RuleActions{},
+				ID:             1,
+			},
 		}
 
 		return data

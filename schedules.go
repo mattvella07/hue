@@ -55,7 +55,7 @@ func (h *Connection) GetSchedules() ([]Schedule, error) {
 
 	err = json.Unmarshal(data, &fullResponse)
 	if err != nil {
-		return nil, err
+		return []Schedule{}, err
 	}
 
 	allSchedules := []Schedule{}
@@ -67,17 +67,17 @@ func (h *Connection) GetSchedules() ([]Schedule, error) {
 
 		s, err := json.Marshal(val)
 		if err != nil {
-			return nil, err
+			return []Schedule{}, err
 		}
 
 		err = json.Unmarshal(s, &schedule)
 		if err != nil {
-			return nil, err
+			return []Schedule{}, err
 		}
 
 		id, err := strconv.Atoi(key)
 		if err != nil {
-			return nil, err
+			return []Schedule{}, err
 		}
 
 		schedule.ID = id

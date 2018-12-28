@@ -1,7 +1,7 @@
 package hue
 
 import (
-	"errors"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -48,13 +48,23 @@ func (h *Connection) execute(req *http.Request) error {
 		return err
 	}
 
-	fullResponse := string(body)
-	fullResponse = strings.ToLower(fullResponse)
+	// Check for errors
+	errMsg := ""
+	errorMsgs := make([]map[string]map[string]interface{}, 10)
 
-	// Check for error in response
-	if strings.Contains(fullResponse, "error") {
-		errMsg := fullResponse[strings.Index(fullResponse, "\"description\":\"")+15 : strings.Index(fullResponse, "\"}}]")]
-		return errors.New(errMsg)
+	err = json.Unmarshal(body, &errorMsgs)
+	if err != nil {
+		return nil
+	}
+
+	for _, e := range errorMsgs {
+		if e["error"]["description"] != nil && e["error"]["description"] != "" {
+			errMsg += fmt.Sprintf("%s\n", e["error"]["description"].(string))
+		}
+	}
+
+	if errMsg != "" {
+		return fmt.Errorf("Error: %s", errMsg)
 	}
 
 	return nil

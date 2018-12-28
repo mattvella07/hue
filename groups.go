@@ -55,7 +55,7 @@ func (h *Connection) GetGroups() ([]Group, error) {
 
 	err = json.Unmarshal(data, &fullResponse)
 	if err != nil {
-		return nil, err
+		return []Group{}, err
 	}
 
 	allGroups := []Group{}
@@ -67,17 +67,17 @@ func (h *Connection) GetGroups() ([]Group, error) {
 
 		g, err := json.Marshal(val)
 		if err != nil {
-			return nil, err
+			return []Group{}, err
 		}
 
 		err = json.Unmarshal(g, &group)
 		if err != nil {
-			return nil, err
+			return []Group{}, err
 		}
 
 		id, err := strconv.Atoi(key)
 		if err != nil {
-			return nil, err
+			return []Group{}, err
 		}
 
 		group.ID = id

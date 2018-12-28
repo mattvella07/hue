@@ -106,7 +106,7 @@ func (h *Connection) GetLights() ([]Light, error) {
 
 	err = json.Unmarshal(data, &fullResponse)
 	if err != nil {
-		return nil, err
+		return []Light{}, err
 	}
 
 	allLights := []Light{}
@@ -118,17 +118,17 @@ func (h *Connection) GetLights() ([]Light, error) {
 
 		l, err := json.Marshal(val)
 		if err != nil {
-			return nil, err
+			return []Light{}, err
 		}
 
 		err = json.Unmarshal(l, &light)
 		if err != nil {
-			return nil, err
+			return []Light{}, err
 		}
 
 		id, err := strconv.Atoi(key)
 		if err != nil {
-			return nil, err
+			return []Light{}, err
 		}
 
 		light.ID = id
@@ -139,7 +139,7 @@ func (h *Connection) GetLights() ([]Light, error) {
 	return allLights, nil
 }
 
-// GetNewLights gets Phillips Hue lights that were discovered the last time
+// GetNewLights gets Phillips Hue lights that were discovered since the last time
 // FindNewLights was called
 func (h *Connection) GetNewLights() (NewLightResponse, error) {
 	data, err := h.get("lights/new")
@@ -151,44 +151,40 @@ func (h *Connection) GetNewLights() (NewLightResponse, error) {
 		return NewLightResponse{}, nil
 	}
 
-	fullResponse := string(data)
+	// Create map to store JSON response
+	fullResponse := make(map[string]interface{})
 
-	if len(fullResponse) <= 1 {
-		return NewLightResponse{}, errors.New("No new lights found")
+	err = json.Unmarshal(data, &fullResponse)
+	if err != nil {
+		return NewLightResponse{}, err
 	}
 
-	// Remove first and last character - { and }
-	fullResponse = fullResponse[1 : len(fullResponse)-1]
-
-	// Split based on ,
-	fullResponseArr := strings.Split(fullResponse, ",")
-
-	newLight := NewLight{}
 	newLightRes := NewLightResponse{}
 
-	// Loop through response and transform into type NewLightResponse
-	for _, item := range fullResponseArr {
-		if strings.Contains(item, "\"lastscan\"") {
-			// Remove text lastscan and " characters
-			newLightRes.LastScan = strings.Replace(item, "\"lastscan\":", "", 1)
-			newLightRes.LastScan = strings.Replace(newLightRes.LastScan, "\"", "", -1)
+	// Loop through all keys in the map and Unmarshal into
+	// Group type
+	for key, val := range fullResponse {
+		if key == "lastscan" {
+			newLightRes.LastScan = val.(string)
 		} else {
-			// Must be at least 3 items after splitting by :
-			items := strings.Split(item, ":")
-			if len(items) < 3 {
-				return NewLightResponse{}, errors.New("Error processing result")
+			newLight := NewLight{}
+
+			l, err := json.Marshal(val)
+			if err != nil {
+				return NewLightResponse{}, err
 			}
 
-			// Remove " characters to get ID
-			if id, err := strconv.Atoi(strings.Replace(items[0], "\"", "", -1)); err == nil {
-				newLight.ID = id
-			} else {
-				return NewLightResponse{}, errors.New("Error processing result")
+			err = json.Unmarshal(l, &newLight)
+			if err != nil {
+				return NewLightResponse{}, err
 			}
 
-			// Remove " and } characters to get light name
-			newLight.Name = strings.Replace(items[2], "\"", "", -1)
-			newLight.Name = strings.Replace(newLight.Name, "}", "", -1)
+			id, err := strconv.Atoi(key)
+			if err != nil {
+				return NewLightResponse{}, err
+			}
+
+			newLight.ID = id
 
 			newLightRes.NewLights = append(newLightRes.NewLights, newLight)
 		}

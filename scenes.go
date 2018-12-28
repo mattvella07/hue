@@ -48,7 +48,7 @@ func (h *Connection) GetScenes() ([]Scene, error) {
 
 	err = json.Unmarshal(data, &fullResponse)
 	if err != nil {
-		return nil, err
+		return []Scene{}, err
 	}
 
 	allScenes := []Scene{}
@@ -60,12 +60,12 @@ func (h *Connection) GetScenes() ([]Scene, error) {
 
 		s, err := json.Marshal(val)
 		if err != nil {
-			return nil, err
+			return []Scene{}, err
 		}
 
 		err = json.Unmarshal(s, &scene)
 		if err != nil {
-			return nil, err
+			return []Scene{}, err
 		}
 
 		scene.ID = key
