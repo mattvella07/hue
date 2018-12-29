@@ -148,7 +148,7 @@ func TestCreateSensor(t *testing.T) {
 		}
 	})
 
-	t.Run("Invalid name", func(t *testing.T) {
+	t.Run("Invalid uniqueid", func(t *testing.T) {
 		err := h.CreateSensor("new sensor", "SENSOR1", "1.0", "S", "", "Phillips", state, config, true)
 		if err == nil {
 			t.Fatal("Expected an error, got nil")

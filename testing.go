@@ -400,6 +400,20 @@ func generateTestData(url string) interface{} {
 		}
 
 		return data
+	case "/rules/1":
+		data := Rule{
+			Name:           "Rule 1",
+			LastTriggered:  "2014-08-27T07:38:51",
+			CreationTime:   "2014-06-27T07:38:51",
+			TimesTriggered: 10,
+			Owner:          "abc",
+			Status:         "enabled",
+			Conditions:     []RuleConditions{},
+			Actions:        []RuleActions{},
+			ID:             1,
+		}
+
+		return data
 	}
 
 	return nil
