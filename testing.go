@@ -49,6 +49,10 @@ type ruleTestData struct {
 	One Rule `json:"1"`
 }
 
+type configurationWhitelistTestData struct {
+	ABC ConfigurationWhitelist `json:"abc"`
+}
+
 func createTestConnection(scenario int) (Connection, *httptest.Server) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
@@ -411,6 +415,40 @@ func generateTestData(url string) interface{} {
 			Conditions:     []RuleConditions{},
 			Actions:        []RuleActions{},
 			ID:             1,
+		}
+
+		return data
+	case "/config":
+		data := Configuration{
+			Name:          "Phillips hue",
+			ZigbeeChannel: 15,
+			Mac:           "abcd:efgh",
+			DHCP:          true,
+			IPAddress:     "192.0.0.1",
+			NetMask:       "0.0.0.1",
+			Gateway:       "0.0.0.1",
+			ProxyAddress:  "none",
+			ProxyPort:     0,
+			UTC:           "2018-07-17T09:27:35",
+			LocalTime:     "2018-07-17T09:27:35",
+			Timezone:      "Central",
+			SWVersion:     "100",
+			APIVersion:    "1.3.0",
+			SWUpdate: ConfigurationSWUpdate{
+				UpdateState: 0,
+				URL:         "",
+				Text:        "",
+				Notify:      true,
+			},
+			LinkButton:       true,
+			PortalServices:   true,
+			PortalConnection: "",
+			PortalState: ConfigurationPortalState{
+				SignedOn:      true,
+				Incoming:      true,
+				Outgoing:      true,
+				Communication: "",
+			},
 		}
 
 		return data
