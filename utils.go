@@ -26,6 +26,10 @@ func (h *Connection) get(url string) ([]byte, error) {
 		return nil, err
 	}
 
+	if err = h.checkForErrors(body); err != nil {
+		return nil, err
+	}
+
 	return body, nil
 }
 
@@ -48,11 +52,15 @@ func (h *Connection) execute(req *http.Request) error {
 		return err
 	}
 
+	return h.checkForErrors(body)
+}
+
+func (h *Connection) checkForErrors(data []byte) error {
 	// Check for errors
 	errMsg := ""
 	errorMsgs := make([]map[string]map[string]interface{}, 10)
 
-	err = json.Unmarshal(body, &errorMsgs)
+	err := json.Unmarshal(data, &errorMsgs)
 	if err != nil {
 		return nil
 	}

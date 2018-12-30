@@ -53,6 +53,10 @@ type configurationWhitelistTestData struct {
 	ABC ConfigurationWhitelist `json:"abc"`
 }
 
+type resourceLinkTestData struct {
+	One ResourceLink `json:"1"`
+}
+
 func createTestConnection(scenario int) (Connection, *httptest.Server) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
@@ -449,6 +453,28 @@ func generateTestData(url string) interface{} {
 				Outgoing:      true,
 				Communication: "",
 			},
+		}
+
+		return data
+	case "/resourcelinks":
+		data := resourceLinkTestData{
+			One: ResourceLink{
+				Name:        "Sunrise",
+				Description: "Wake up experience",
+				Class:       1,
+				Owner:       "abcd",
+				Links:       []string{"/schedules/1", "/schedules/2"},
+			},
+		}
+
+		return data
+	case "/resourcelinks/1":
+		data := ResourceLink{
+			Name:        "Sunset",
+			Description: "Go to sleep experience",
+			Class:       1,
+			Owner:       "abcd",
+			Links:       []string{"/schedules/1", "/schedules/2"},
 		}
 
 		return data
