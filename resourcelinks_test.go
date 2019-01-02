@@ -128,14 +128,14 @@ func TestCreateResourceLink(t *testing.T) {
 	defer server.Close()
 
 	t.Run("Successful resource link creation", func(t *testing.T) {
-		err := h.CreateResourceLink("new resource link", "desc", 1, true, []string{"/path/1"})
+		err := h.CreateResourceLink("new resource link", "desc", true, []string{"/path/1"})
 		if err != nil {
 			t.Fatal(err)
 		}
 	})
 
 	t.Run("Invalid name", func(t *testing.T) {
-		err := h.CreateResourceLink("", "desc", 1, true, []string{"/path/1"})
+		err := h.CreateResourceLink("", "desc", true, []string{"/path/1"})
 		if err == nil {
 			t.Fatal("Expected an error, got nil")
 		}
@@ -148,22 +148,8 @@ func TestCreateResourceLink(t *testing.T) {
 		}
 	})
 
-	t.Run("Invalid class", func(t *testing.T) {
-		err := h.CreateResourceLink("new resource link", "desc", 0, true, []string{"/path/1"})
-		if err == nil {
-			t.Fatal("Expected an error, got nil")
-		}
-
-		{
-			expected := "Class must be between 1 and 10,000"
-			if err.Error() != expected {
-				t.Fatalf("Expected error message to equal %s, got %s", expected, err.Error())
-			}
-		}
-	})
-
 	t.Run("Invalid links", func(t *testing.T) {
-		err := h.CreateResourceLink("new resource link", "desc", 1, true, []string{})
+		err := h.CreateResourceLink("new resource link", "desc", true, []string{})
 		if err == nil {
 			t.Fatal("Expected an error, got nil")
 		}

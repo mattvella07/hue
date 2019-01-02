@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os"
 )
 
 // Connection contains important connection info
@@ -33,11 +32,6 @@ func (h *Connection) initializeHue() error {
 	err := h.getBridgeIPAddress()
 	if err != nil {
 		return fmt.Errorf("GetBridgeIPAddress Error: %s", err)
-	}
-
-	err = h.getUserID()
-	if err != nil {
-		return fmt.Errorf("GetUserID Error: %s", err)
 	}
 
 	h.getBaseURL()
@@ -69,18 +63,6 @@ func (h *Connection) getBridgeIPAddress() error {
 
 	h.internalIPAddress = h.discoveryResponse[0].InternalIPAddress
 	return nil
-}
-
-func (h *Connection) getUserID() error {
-	val, ok := os.LookupEnv("hueUserID")
-	if ok {
-		h.UserID = val
-		return nil
-	} else {
-		return errors.New("Unable to get Hue user ID")
-		//Generate it and set env var
-		//fmt.Sprintf("http://%s/api", h.internalIPAddress)
-	}
 }
 
 func (h *Connection) getBaseURL() {
